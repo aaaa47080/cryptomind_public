@@ -1,0 +1,47 @@
+name: Post-deploy Smoke
+
+# 部署後冒煙測試（2026-08-20 建）：手動或排程觸發，對線上跑最小瀏覽器驗證。
+# 涵蓋 2026-08-20 五個「上線才抓到」的 bug 類型（詳 scripts/smoke_postdeploy.py）。
+#
+# 帶登入態的完整冒煙：把 Playwright storage_state JSON 存成 repo secret
+# AUTH_STATE_JSON，job 會寫入暫存檔後帶入。沒設 secret 時自動只跑訪客段。
+#
+# 注意：本 repo 的 GitHub Actions 目前因帳號帳單問題全部無法啟動
+#（2026-08-20 診斷：「recent account payments have failed or your spending
+# limit needs to be increased」）。帳單修復後本 workflow 即可用。
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: '要測的環境 URL'
+        required: false
+        default: 'https://cryptomind-ton.zeabur.app'
+  schedule:
+    - cron: '0 2 * * *'  # 每天 10:00 (UTC+8) 例行冒煙
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Restore auth state (optional)
+        if: ${{ secrets.AUTH_STATE_JSON != '' }}
+        run: echo '${{ secrets.AUTH_STATE_JSON }}' > /tmp/auth_state.json
+
+      - name: Run smoke
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://cryptomind-ton.zeabur.app' }}
+          AUTH_STATE: ${{ secrets.AUTH_STATE_JSON != '' && '/tmp/auth_state.json' || '' }}
+        run: python scripts/smoke_postdeploy.py

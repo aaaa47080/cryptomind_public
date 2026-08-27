@@ -1,0 +1,58 @@
+# VCS / local env
+.git
+.gitignore
+.venv
+.python-version
+.vscode
+.idea
+
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime logs / outputs
+*.log
+logs/
+test_results/
+tmp/
+
+# Runtime data (should be created at runtime, not baked into image)
+core/database/*.db
+core/database/*.sqlite
+core/database/*.sqlite3
+data/*.jsonl
+
+# Local QA / docs not needed in runtime image
+tests/
+pw_test/
+docs/
+instructions/
+ARCHITECTURE_AUDIT_REPORT.md
+README.md
+README_CN.md
+
+# scripts/ 大多是本機維運工具（migrate/reset/scan），不必進 runtime image；
+# 但 cron worker 的 Dockerfile.cron 靠 `COPY . .` 帶入 cron 腳本。
+# 用 whitelist 保留 cron 排程用腳本，其餘維運腳本不進映像檔。
+# ⚠️ crontab.txt 引用的每個腳本都必須在 whitelist（缺了會靜默不跑）：
+#   cron_governance / cron_expire_members / analysis_worker
+#   cron_wallet_monitor（每 10 分鐘錢包警示）/ cron_recompute_trust（每日 trust 重算）
+scripts/*
+!scripts/cron_governance.py
+!scripts/cron_expire_members.py
+!scripts/analysis_worker.py
+!scripts/cron_wallet_monitor.py
+!scripts/cron_recompute_trust.py
+
+# Local tooling / meta folders
+.claude/
+.agent/
+
+# OS junk
+.DS_Store

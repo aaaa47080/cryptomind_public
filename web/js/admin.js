@@ -1,0 +1,1123 @@
+// ========================================
+// admin.js - Admin Panel Module
+// ========================================
+
+const AdminPanel = {
+    currentSubPage: 'broadcast',
+    initialized: false,
+
+    init() {
+        const container = document.getElementById('admin-content');
+        if (!container) return;
+
+        // Render shell with sub-nav
+        container.innerHTML = `
+            <!-- Page Header -->
+            <div class="mb-5">
+                <h1 class="text-lg font-semibold text-textMain tracking-tight font-serif">
+                    ${window.I18n ? window.I18n.t('admin.title') || 'Admin' : 'Admin'}
+                </h1>
+                <p class="text-xs text-textMuted mt-0.5">${window.I18n ? window.I18n.t('admin.subtitle') || 'Manage platform, users, stats & monitoring' : 'Manage platform, users, stats & monitoring'}</p>
+            </div>
+            <!-- Sub Navigation -->
+            <div class="flex flex-wrap gap-1.5 mb-6 border-b border-borderSubtle pb-3">
+                <button id="admin-subnav-broadcast" data-click="AdminPanel.switchSubPage" data-click-arg="broadcast"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="megaphone" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.broadcast') || 'Broadcast' : 'Broadcast'}</span>
+                </button>
+                <button id="admin-subnav-users" data-click="AdminPanel.switchSubPage" data-click-arg="users"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.users') || 'Users' : 'Users'}</span>
+                </button>
+                <button id="admin-subnav-forum" data-click="AdminPanel.switchSubPage" data-click-arg="forum"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.posts') || 'Forum' : 'Forum'}</span>
+                </button>
+                <button id="admin-subnav-config" data-click="AdminPanel.switchSubPage" data-click-arg="config"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.config') || 'Config' : 'Config'}</span>
+                </button>
+                <button id="admin-subnav-stats" data-click="AdminPanel.switchSubPage" data-click-arg="stats"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.stats') || 'Stats' : 'Stats'}</span>
+                </button>
+                <button id="admin-subnav-visitors" data-click="AdminPanel.switchSubPage" data-click-arg="visitors"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.visitors') || 'Visitors' : 'Visitors'}</span>
+                </button>
+                <button id="admin-subnav-audit" data-click="AdminPanel.switchSubPage" data-click-arg="audit"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.audit') || 'Audit' : 'Audit'}</span>
+                </button>
+                <button id="admin-subnav-wallet-monitor" data-click="AdminPanel.switchSubPage" data-click-arg="wallet-monitor"
+                        class="admin-subnav-btn px-3 py-1.5 rounded-lg text-[13px] font-medium transition flex items-center gap-1.5 text-textMuted hover:bg-surfaceHighlight hover:text-textSecondary active:scale-[0.98]">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    <span>${window.I18n ? window.I18n.t('admin.walletMonitor') || 'Wallet Monitor' : 'Wallet Monitor'}</span>
+                </button>
+            </div>
+            <!-- Sub Page Content -->
+            <div id="admin-subpage-content"></div>
+        `;
+
+        AppUtils.refreshIcons();
+        this.switchSubPage(this.currentSubPage);
+        this.initialized = true;
+    },
+
+    switchSubPage(page) {
+        this.currentSubPage = page;
+
+        // Update sub-nav active state
+        document.querySelectorAll('.admin-subnav-btn').forEach((btn) => {
+            btn.classList.remove('bg-primary/10', 'text-primary', 'border-primary/30');
+            btn.classList.add('text-textMuted', 'hover:bg-surfaceHighlight', 'hover:text-textSecondary');
+        });
+        const activeBtn = document.getElementById(`admin-subnav-${page}`);
+        if (activeBtn) {
+            activeBtn.classList.add('bg-primary/10', 'text-primary');
+            activeBtn.classList.remove('text-textMuted', 'hover:bg-surfaceHighlight', 'hover:text-textSecondary');
+        }
+
+        // Render sub page
+        switch (page) {
+            case 'broadcast':
+                this.BroadcastManager.render();
+                break;
+            case 'users':
+                this.UserManager.render();
+                break;
+            case 'forum':
+                this.ForumManager.render();
+                break;
+            case 'config':
+                this.ConfigManager.render();
+                break;
+            case 'stats':
+                if (window.AdminStatsManager) AdminStatsManager.render();
+                else
+                    document.getElementById('admin-subpage-content').innerHTML =
+                        '<div class="text-center text-textMuted py-12">Stats module loading...</div>';
+                break;
+            case 'visitors':
+                if (window.AdminVisitorsManager) AdminVisitorsManager.render();
+                else
+                    document.getElementById('admin-subpage-content').innerHTML =
+                        '<div class="text-center text-textMuted py-12">Visitors module loading...</div>';
+                break;
+            case 'audit':
+                if (window.AdminAuditManager) AdminAuditManager.render();
+                else
+                    document.getElementById('admin-subpage-content').innerHTML =
+                        '<div class="text-center text-textMuted py-12">Audit module loading...</div>';
+                break;
+            case 'wallet-monitor':
+                if (window.AdminWalletMonitorManager) AdminWalletMonitorManager.render();
+                else
+                    document.getElementById('admin-subpage-content').innerHTML =
+                        '<div class="text-center text-textMuted py-12">Wallet Monitor module loading...</div>';
+                break;
+        }
+    },
+
+    // ========================================
+    // Broadcast Manager
+    // ========================================
+    BroadcastManager: {
+        render() {
+            const container = document.getElementById('admin-subpage-content');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Send Form -->
+                    <div class="bg-surface rounded-2xl border border-borderSubtle p-5">
+                        <h3 class="font-bold text-secondary mb-4 flex items-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Send Broadcast
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-textMuted mb-1 block">Type</label>
+                                <select id="broadcast-type" class="w-full bg-background border border-borderLight rounded-xl px-3 py-2 text-sm text-secondary">
+                                    <option value="announcement">Announcement</option>
+                                    <option value="system_update">System Update</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-textMuted mb-1 block">Title</label>
+                                <input id="broadcast-title" type="text" maxlength="200" placeholder="${window.I18n ? window.I18n.t('admin.notifTitlePlaceholder') : 'Notification title...'}"
+                                       class="w-full bg-background border border-borderLight rounded-xl px-3 py-2 text-sm text-secondary placeholder:text-textMuted/50 focus:border-primary/50 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs text-textMuted mb-1 block">Body</label>
+                                <textarea id="broadcast-body" rows="4" maxlength="1000" placeholder="${window.I18n ? window.I18n.t('admin.notifContentPlaceholder') : 'Notification content...'}"
+                                          class="w-full bg-background border border-borderLight rounded-xl px-3 py-2 text-sm text-secondary placeholder:text-textMuted/50 focus:border-primary/50 focus:outline-none resize-none"></textarea>
+                            </div>
+                            <!-- Preview -->
+                            <div id="broadcast-preview" class="hidden bg-background/50 rounded-xl p-3 border border-borderSubtle">
+                                <div class="text-[10px] text-textMuted mb-1 uppercase tracking-wider">Preview</div>
+                                <div id="broadcast-preview-title" class="text-sm font-medium text-secondary"></div>
+                                <div id="broadcast-preview-body" class="text-xs text-textMuted mt-1"></div>
+                            </div>
+                            <button data-click="AdminPanel.BroadcastManager.send"
+                                    id="broadcast-send-btn"
+                                    class="w-full py-2.5 bg-primary hover:bg-primary/80 text-background rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i> ${window.I18n ? window.I18n.t('admin.sendToAll') : 'Send to All Users'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div class="bg-surface rounded-2xl border border-borderSubtle p-5">
+                        <h3 class="font-bold text-secondary mb-4 flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4"></i> Broadcast History
+                        </h3>
+                        <div id="broadcast-history" class="space-y-3">
+                            <div class="text-center text-textMuted text-sm py-8">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            AppUtils.refreshIcons();
+            this._attachPreviewListeners();
+            this.loadHistory();
+        },
+
+        _attachPreviewListeners() {
+            const title = document.getElementById('broadcast-title');
+            const body = document.getElementById('broadcast-body');
+            const preview = document.getElementById('broadcast-preview');
+
+            const update = () => {
+                const t = title?.value?.trim();
+                const b = body?.value?.trim();
+                if (t || b) {
+                    preview.classList.remove('hidden');
+                    document.getElementById('broadcast-preview-title').textContent =
+                        t || '(no title)';
+                    document.getElementById('broadcast-preview-body').textContent =
+                        b || '(no body)';
+                } else {
+                    preview.classList.add('hidden');
+                }
+            };
+
+            if (title) title.addEventListener('input', update);
+            if (body) body.addEventListener('input', update);
+        },
+
+        async send() {
+            const title = document.getElementById('broadcast-title')?.value?.trim();
+            const body = document.getElementById('broadcast-body')?.value?.trim();
+            const type = document.getElementById('broadcast-type')?.value || 'announcement';
+            const btn = document.getElementById('broadcast-send-btn');
+
+            if (!title || !body) {
+                if (typeof showToast === 'function')
+                    showToast(window.I18n ? window.I18n.t('admin.fillTitleBody') : 'Please fill in title and body', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML =
+                '<div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div> ' + (window.I18n ? window.I18n.t('admin.sending') : 'Sending...');
+
+            try {
+                const data = await AppAPI.post('/api/admin/notifications/broadcast', { title, body, type });
+                if (typeof showToast === 'function') {
+                    showToast(
+                        window.I18n ? window.I18n.t('admin.sentSummary', { sent: data.sent_count, online: data.online_count }) : `Sent to ${data.sent_count} users (${data.online_count} online)`,
+                        'success'
+                    );
+                }
+
+                // Clear form
+                document.getElementById('broadcast-title').value = '';
+                document.getElementById('broadcast-body').value = '';
+                document.getElementById('broadcast-preview').classList.add('hidden');
+
+                // Reload history
+                this.loadHistory();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> ' + (window.I18n ? window.I18n.t('admin.sendToAll') : 'Send to All Users');
+                AppUtils.refreshIcons();
+            }
+        },
+
+        async loadHistory() {
+            const container = document.getElementById('broadcast-history');
+            if (!container) return;
+
+            try {
+                const data = await AppAPI.get('/api/admin/notifications/history?limit=20');
+                if (!data.broadcasts || data.broadcasts.length === 0) {
+                    container.innerHTML =
+                        '<div class="text-center text-textMuted text-sm py-8">No broadcasts yet</div>';
+                    return;
+                }
+
+                container.innerHTML = data.broadcasts
+                    .map((b) => {
+                        const typeLabel =
+                            b.type === 'system_update' ? 'System Update' : 'Announcement';
+                        const typeColor =
+                            b.type === 'system_update' ? 'text-success' : 'text-accent';
+                        const time = b.created_at ? new Date(b.created_at).toLocaleString() : '';
+
+                        return `
+                        <div class="p-3 bg-background/50 rounded-xl border border-borderSubtle">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-medium ${typeColor}">${typeLabel}</span>
+                                <span class="text-[10px] text-textMuted">${time}</span>
+                            </div>
+                            <div class="text-sm font-medium text-secondary">${this._escapeHtml(b.title)}</div>
+                            <div class="text-xs text-textMuted mt-0.5 line-clamp-2">${this._escapeHtml(b.body)}</div>
+                            <div class="text-[10px] text-textMuted/60 mt-1">${b.recipient_count} recipients</div>
+                        </div>
+                    `;
+                    })
+                    .join('');
+            } catch (e) {
+                container.innerHTML = `<div class="text-center text-danger text-sm py-4">Failed to load history</div>`;
+            }
+        },
+
+        _escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        },
+    },
+
+    // ========================================
+    // User Manager
+    // ========================================
+    UserManager: {
+        currentPage: 1,
+        searchQuery: '',
+
+        render() {
+            const container = document.getElementById('admin-subpage-content');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="bg-surface rounded-2xl border border-borderSubtle p-5">
+                    <!-- Search Bar -->
+                    <div class="flex gap-3 mb-4">
+                        <div class="flex-1 relative">
+                            <i data-lucide="search" class="w-4 h-4 text-textMuted absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <input id="admin-user-search" type="text" placeholder="Search by username or user ID..."
+                                   value="${this._escapeHtml(this.searchQuery)}"
+                                   class="w-full bg-background border border-borderLight rounded-xl pl-10 pr-3 py-2 text-sm text-secondary placeholder:text-textMuted/50 focus:border-primary/50 focus:outline-none">
+                        </div>
+                        <button data-click="AdminPanel.UserManager.doSearch"
+                                class="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-xl text-sm font-medium transition">
+                            Search
+                        </button>
+                    </div>
+
+                    <!-- User List -->
+                    <div id="admin-user-list">
+                        <div class="text-center text-textMuted text-sm py-8">Loading...</div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="admin-user-pagination" class="flex items-center justify-between mt-4 hidden">
+                        <button data-click="AdminPanel.UserManager.prevPage" id="admin-users-prev"
+                                class="px-3 py-1.5 bg-surfaceHighlight hover:bg-surfaceHighlight rounded-lg text-xs text-textMuted transition">
+                            Previous
+                        </button>
+                        <span id="admin-users-page-info" class="text-xs text-textMuted"></span>
+                        <button data-click="AdminPanel.UserManager.nextPage" id="admin-users-next"
+                                class="px-3 py-1.5 bg-surfaceHighlight hover:bg-surfaceHighlight rounded-lg text-xs text-textMuted transition">
+                            Next
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Action Modal -->
+                <div id="admin-user-modal" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4">
+                    <div class="bg-surface rounded-2xl border border-borderLight w-full max-w-md max-h-[80dvh] overflow-y-auto" id="admin-user-modal-content">
+                    </div>
+                </div>
+            `;
+
+            AppUtils.refreshIcons();
+
+            // Enter key search
+            const searchInput = document.getElementById('admin-user-search');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.doSearch();
+                });
+            }
+
+            this.loadUsers();
+        },
+
+        doSearch() {
+            this.searchQuery = document.getElementById('admin-user-search')?.value?.trim() || '';
+            this.currentPage = 1;
+            this.loadUsers();
+        },
+
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.loadUsers();
+            }
+        },
+
+        nextPage() {
+            this.currentPage++;
+            this.loadUsers();
+        },
+
+        async loadUsers() {
+            const listEl = document.getElementById('admin-user-list');
+            if (!listEl) return;
+
+            listEl.innerHTML =
+                '<div class="text-center text-textMuted text-sm py-8"><div class="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2"></div>Loading...</div>';
+
+            try {
+                let url = `/api/admin/users?page=${this.currentPage}&limit=20`;
+                if (this.searchQuery) url += `&search=${encodeURIComponent(this.searchQuery)}`;
+
+                const data = await AppAPI.get(url);
+                const users = data.users || [];
+                const total = data.total || 0;
+                const totalPages = Math.ceil(total / 20);
+
+                if (users.length === 0) {
+                    listEl.innerHTML =
+                        '<div class="text-center text-textMuted text-sm py-8">No users found</div>';
+                    document.getElementById('admin-user-pagination')?.classList.add('hidden');
+                    return;
+                }
+
+                listEl.innerHTML = `
+                    <div class="text-xs text-textMuted mb-3">${total} users total</div>
+                    <div class="space-y-2">
+                        ${users.map((u) => this._renderUserRow(u)).join('')}
+                    </div>
+                `;
+
+                // Pagination
+                const pagEl = document.getElementById('admin-user-pagination');
+                if (pagEl && totalPages > 1) {
+                    pagEl.classList.remove('hidden');
+                    document.getElementById('admin-users-page-info').textContent =
+                        `Page ${this.currentPage} / ${totalPages}`;
+                    document.getElementById('admin-users-prev').disabled = this.currentPage <= 1;
+                    document.getElementById('admin-users-next').disabled =
+                        this.currentPage >= totalPages;
+                } else if (pagEl) {
+                    pagEl.classList.add('hidden');
+                }
+
+                AppUtils.refreshIcons();
+            } catch (e) {
+                listEl.innerHTML = `<div class="text-center text-danger text-sm py-4">Failed to load users: ${SecurityUtils.escapeHTML(e.message || '')}</div>`;
+            }
+        },
+
+        _renderUserRow(user) {
+            const roleBadge =
+                user.role === 'admin'
+                    ? '<span class="text-[10px] px-1.5 py-0.5 bg-danger/20 text-danger rounded-full font-bold">ADMIN</span>'
+                    : '';
+            const normalizedTier = (user.membership_tier || 'free').toLowerCase();
+            const premiumBadge =
+                ['premium', 'pro', 'plus'].includes(normalizedTier)
+                    ? '<span class="text-[10px] px-1.5 py-0.5 bg-accent/20 text-accent rounded-full font-bold">PREMIUM</span>'
+                    : '';
+            const statusDot = user.is_active
+                ? '<div class="w-2 h-2 rounded-full bg-success shrink-0" title="' + (window.I18n ? window.I18n.t('admin.statusActive') : 'Active') + '"></div>'
+                : '<div class="w-2 h-2 rounded-full bg-danger shrink-0" title="' + (window.I18n ? window.I18n.t('admin.statusSuspended') : 'Suspended') + '"></div>';
+            const time = user.created_at ? new Date(user.created_at).toLocaleDateString() : '';
+
+            return `
+                <div class="flex items-center gap-3 p-3 bg-background/50 rounded-xl border border-borderSubtle hover:border-borderLight transition cursor-pointer"
+                     data-click="AdminPanel.UserManager.openUserModal" data-click-arg="${encodeURIComponent(user.user_id)}">
+                    ${statusDot}
+                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold shrink-0">
+                        ${(user.username || '?')[0].toUpperCase()}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-secondary truncate">${this._escapeHtml(user.username)}</span>
+                            ${roleBadge}${premiumBadge}
+                        </div>
+                        <div class="text-[10px] text-textMuted truncate">${user.user_id}</div>
+                    </div>
+                    <div class="text-[10px] text-textMuted shrink-0">${time}</div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-textMuted/50 shrink-0"></i>
+                </div>
+            `;
+        },
+
+        async openUserModal(userId) {
+            const modal = document.getElementById('admin-user-modal');
+            const content = document.getElementById('admin-user-modal-content');
+            if (!modal || !content) return;
+
+            modal.classList.remove('hidden');
+            content.innerHTML =
+                '<div class="p-8 text-center"><div class="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div></div>';
+
+            // Close on backdrop click
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.classList.add('hidden');
+            };
+
+            try {
+                const data = await AppAPI.get(`/api/admin/users/${userId}`);
+                const u = data.user;
+
+                const isActive = u.is_active;
+                const normalizedTier = (u.membership_tier || 'free').toLowerCase();
+                const isPro = ['premium', 'pro', 'plus'].includes(normalizedTier);
+                const displayTier = isPro ? 'premium' : 'free';
+                const isAdmin = u.role === 'admin';
+
+                content.innerHTML = `
+                    <div class="p-5">
+                        <!-- Header -->
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary text-lg font-bold">
+                                ${(u.username || '?')[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="font-bold text-secondary">${this._escapeHtml(u.username)}</div>
+                                <div class="text-xs text-textMuted">${u.user_id}</div>
+                            </div>
+                            <button data-click="closeModal" data-click-arg="admin-user-modal"
+                                    class="ml-auto p-2 hover:bg-surfaceHighlight rounded-lg transition">
+                                <i data-lucide="x" class="w-4 h-4 text-textMuted"></i>
+                            </button>
+                        </div>
+
+                        <!-- Info Grid -->
+                        <div class="grid grid-cols-2 gap-3 mb-5 text-xs">
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">Role</div>
+                                <div class="text-secondary font-medium">${u.role || 'user'}</div>
+                            </div>
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">Membership</div>
+                                <div class="text-secondary font-medium">${displayTier}${u.membership_expires_at ? ' (expires ' + new Date(u.membership_expires_at).toLocaleDateString() + ')' : ''}</div>
+                            </div>
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">Status</div>
+                                <div class="${isActive ? 'text-success' : 'text-danger'} font-medium">${isActive ? 'Active' : 'Suspended'}</div>
+                            </div>
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">Joined</div>
+                                <div class="text-secondary font-medium">${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        <!-- Usage Depth（P1-4）-->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 text-xs">
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">${window.I18n ? window.I18n.t('admin.userDetailChat') || 'Chat' : 'Chat'}</div>
+                                <div class="text-secondary font-medium">${u.chat_message_count ?? 0} msgs</div>
+                            </div>
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">${window.I18n ? window.I18n.t('admin.userDetailMemory') || 'Memory' : 'Memory'}</div>
+                                <div class="text-secondary font-medium">${u.memory_count ?? 0}</div>
+                            </div>
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">${window.I18n ? window.I18n.t('admin.userDetailSkill') || 'Skills' : 'Skills'}</div>
+                                <div class="text-secondary font-medium">${u.custom_skill_count ?? 0}</div>
+                            </div>
+                            <div class="bg-background/50 rounded-xl p-3">
+                                <div class="text-textMuted mb-0.5">${window.I18n ? window.I18n.t('admin.userDetailWallet') || 'Wallet' : 'Wallet'}</div>
+                                <div class="text-secondary font-mono text-[10px] break-all">${u.wallet_address ? u.wallet_address.slice(0, 12) + '…' : '—'}</div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity（P1-4）-->
+                        ${(u.recent_audit && u.recent_audit.length) ? `
+                        <div class="mb-5">
+                            <div class="text-textMuted text-xs mb-2">${window.I18n ? window.I18n.t('admin.userDetailRecentActivity') || 'Recent Activity' : 'Recent Activity'}</div>
+                            <div class="space-y-1 max-h-32 overflow-y-auto">
+                                ${u.recent_audit.map((a) => `
+                                    <div class="flex items-center gap-2 text-[11px] py-1 px-2 rounded-lg bg-background/30">
+                                        <span class="${a.success ? 'text-success' : 'text-danger'}">${a.success ? '✓' : '✗'}</span>
+                                        <span class="text-secondary font-mono">${a.action || '?'}</span>
+                                        <span class="text-textMuted ml-auto">${a.at ? new Date(a.at).toLocaleString() : ''}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Actions -->
+                        <div class="space-y-2">
+                            <h4 class="text-xs text-textMuted font-medium uppercase tracking-wider mb-2">Actions</h4>
+
+                            <!-- Role Toggle -->
+                            <button data-click="AdminPanel.UserManager.setRole" data-click-args="${encodeURIComponent(JSON.stringify([u.user_id, isAdmin ? 'user' : 'admin']))}"
+                                    class="w-full flex items-center gap-3 p-3 rounded-xl border border-borderSubtle hover:bg-surfaceHighlight transition text-left">
+                                <i data-lucide="${isAdmin ? 'shield-off' : 'shield'}" class="w-4 h-4 ${isAdmin ? 'text-textMuted' : 'text-danger'}"></i>
+                                <div>
+                                    <div class="text-sm text-secondary">${isAdmin ? 'Remove Admin' : 'Make Admin'}</div>
+                                    <div class="text-[10px] text-textMuted">${isAdmin ? 'Demote to regular user' : 'Grant admin privileges'}</div>
+                                </div>
+                            </button>
+
+                            <!-- Membership Toggle -->
+                            <button data-click="AdminPanel.UserManager.setMembership" data-click-args="${encodeURIComponent(JSON.stringify([u.user_id, isPro ? 'free' : 'pro']))}"
+                                    class="w-full flex items-center gap-3 p-3 rounded-xl border border-borderSubtle hover:bg-surfaceHighlight transition text-left">
+                                <i data-lucide="${isPro ? 'star-off' : 'star'}" class="w-4 h-4 ${isPro ? 'text-textMuted' : 'text-accent'}"></i>
+                                <div>
+                                    <div class="text-sm text-secondary">${isPro ? 'Remove Pro' : 'Grant Pro (1 month)'}</div>
+                                    <div class="text-[10px] text-textMuted">${isPro ? 'Downgrade to free tier' : 'Upgrade to pro membership'}</div>
+                                </div>
+                            </button>
+
+                            <!-- Status Toggle -->
+                            <button data-click="AdminPanel.UserManager.toggleStatus" data-click-args="${encodeURIComponent(JSON.stringify([u.user_id, !isActive]))}"
+                                    class="w-full flex items-center gap-3 p-3 rounded-xl border ${isActive ? 'border-danger/20 hover:bg-danger/5' : 'border-success/20 hover:bg-success/5'} transition text-left">
+                                <i data-lucide="${isActive ? 'ban' : 'check-circle'}" class="w-4 h-4 ${isActive ? 'text-danger' : 'text-success'}"></i>
+                                <div>
+                                    <div class="text-sm ${isActive ? 'text-danger' : 'text-success'}">${isActive ? 'Suspend Account' : 'Reactivate Account'}</div>
+                                    <div class="text-[10px] text-textMuted">${isActive ? 'Block user from accessing the platform' : 'Restore user access'}</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                AppUtils.refreshIcons();
+            } catch (e) {
+                content.innerHTML = `<div class="p-8 text-center text-danger text-sm">Failed to load user: ${SecurityUtils.escapeHTML(e.message || '')}</div>`;
+            }
+        },
+
+        async setRole(userId, newRole) {
+            try {
+                await AppAPI.put(`/api/admin/users/${userId}/role`, { role: newRole });
+                if (typeof showToast === 'function')
+                    showToast(`Role updated to ${newRole}`, 'success');
+                this.openUserModal(userId); // Refresh modal
+                this.loadUsers(); // Refresh list
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        async setMembership(userId, tier) {
+            try {
+                const body = { tier };
+                if (tier === 'pro') body.months = 1;
+
+                await AppAPI.put(`/api/admin/users/${userId}/membership`, body);
+                if (typeof showToast === 'function')
+                    showToast(`Membership set to ${tier}`, 'success');
+                this.openUserModal(userId);
+                this.loadUsers();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        async toggleStatus(userId, active) {
+            const reason = active ? null : prompt('Suspension reason (optional):');
+            try {
+                await AppAPI.put(`/api/admin/users/${userId}/status`, { active, reason });
+                if (typeof showToast === 'function')
+                    showToast(active ? 'Account reactivated' : 'Account suspended', 'success');
+                this.openUserModal(userId);
+                this.loadUsers();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        _escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        },
+    },
+
+    // ========================================
+    // Forum Manager (P1)
+    // ========================================
+    ForumManager: {
+        currentView: 'posts', // posts | reports
+        currentPage: 1,
+        searchQuery: '',
+        statusFilter: 'all',
+
+        render() {
+            const container = document.getElementById('admin-subpage-content');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="bg-surface rounded-2xl border border-borderSubtle p-5">
+                    <!-- View Toggle -->
+                    <div class="flex gap-2 mb-4">
+                        <button data-click="AdminPanel.ForumManager.switchView" data-click-arg="posts" id="forum-view-posts"
+                                class="forum-view-btn px-3 py-1.5 rounded-lg text-xs font-medium transition">Posts</button>
+                        <button data-click="AdminPanel.ForumManager.switchView" data-click-arg="reports" id="forum-view-reports"
+                                class="forum-view-btn px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                            Reports <span id="forum-report-badge" class="hidden ml-1 px-1.5 py-0.5 bg-danger/20 text-danger rounded-full text-[10px]"></span>
+                        </button>
+                    </div>
+                    <div id="forum-content"></div>
+                </div>
+            `;
+            this.switchView(this.currentView);
+        },
+
+        switchView(view) {
+            this.currentView = view;
+            document.querySelectorAll('.forum-view-btn').forEach((b) => {
+                b.classList.remove('bg-primary/20', 'text-primary');
+                b.classList.add('text-textMuted', 'hover:bg-surfaceHighlight');
+            });
+            const active = document.getElementById(`forum-view-${view}`);
+            if (active) {
+                active.classList.add('bg-primary/20', 'text-primary');
+                active.classList.remove('text-textMuted', 'hover:bg-surfaceHighlight');
+            }
+            if (view === 'posts') this.loadPosts();
+            else this.loadReports();
+        },
+
+        async loadPosts() {
+            const el = document.getElementById('forum-content');
+            if (!el) return;
+
+            el.innerHTML = `
+                <div class="flex gap-3 mb-4">
+                    <div class="flex-1 relative">
+                        <input id="forum-search" type="text" placeholder="Search posts..."
+                               value="${this._esc(this.searchQuery)}"
+                               class="w-full bg-background border border-borderLight rounded-xl pl-3 pr-3 py-2 text-sm text-secondary placeholder:text-textMuted/50 focus:border-primary/50 focus:outline-none">
+                    </div>
+                    <select id="forum-status-filter" data-change-action="adminForumStatus"
+                            class="bg-background border border-borderLight rounded-xl px-3 py-2 text-sm text-secondary">
+                        <option value="all" ${this.statusFilter === 'all' ? 'selected' : ''}>All</option>
+                        <option value="hidden" ${this.statusFilter === 'hidden' ? 'selected' : ''}>Hidden</option>
+                        <option value="pinned" ${this.statusFilter === 'pinned' ? 'selected' : ''}>Pinned</option>
+                    </select>
+                    <button data-click="AdminPanel.ForumManager.doSearch"
+                            class="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-xl text-sm font-medium transition">Search</button>
+                </div>
+                <div id="forum-posts-list"><div class="text-center text-textMuted text-sm py-8">Loading...</div></div>
+            `;
+
+            const searchInput = document.getElementById('forum-search');
+            if (searchInput)
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.doSearch();
+                });
+
+            try {
+                let url = `/api/admin/forum/posts?page=${this.currentPage}&limit=20&status=${this.statusFilter}`;
+                if (this.searchQuery) url += `&search=${encodeURIComponent(this.searchQuery)}`;
+
+                const data = await AppAPI.get(url);
+                const posts = data.posts || [];
+
+                const listEl = document.getElementById('forum-posts-list');
+                if (posts.length === 0) {
+                    listEl.innerHTML =
+                        '<div class="text-center text-textMuted text-sm py-8">No posts found</div>';
+                    return;
+                }
+
+                listEl.innerHTML = `
+                    <div class="text-xs text-textMuted mb-2">${data.total} posts</div>
+                    <div class="space-y-2">${posts.map((p) => this._renderPostRow(p)).join('')}</div>
+                `;
+                AppUtils.refreshIcons();
+            } catch (e) {
+                document.getElementById('forum-posts-list').innerHTML =
+                    `<div class="text-danger text-sm py-4 text-center">${SecurityUtils.escapeHTML(e.message || '')}</div>`;
+            }
+        },
+
+        _renderPostRow(p) {
+            const hiddenBadge = p.is_hidden
+                ? '<span class="text-[10px] px-1.5 py-0.5 bg-danger/20 text-danger rounded-full">HIDDEN</span>'
+                : '';
+            const pinnedBadge = p.is_pinned
+                ? '<span class="text-[10px] px-1.5 py-0.5 bg-accent/20 text-accent rounded-full">PINNED</span>'
+                : '';
+            const time = p.created_at ? new Date(p.created_at).toLocaleDateString() : '';
+
+            return `
+                <div class="flex items-center gap-3 p-3 bg-background/50 rounded-xl border border-borderSubtle">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm font-medium text-secondary truncate">${this._esc(p.title)}</span>
+                            ${hiddenBadge}${pinnedBadge}
+                        </div>
+                        <div class="text-[10px] text-textMuted mt-0.5">
+                            by ${this._esc(p.username)} | ${p.category || ''} | ${p.view_count} views | ${p.comment_count} comments | ${time}
+                        </div>
+                    </div>
+                    <div class="flex gap-1 shrink-0">
+                        <button data-click="AdminPanel.ForumManager.toggleVisibility" data-click-args="${encodeURIComponent(JSON.stringify([p.id, p.is_hidden]))}"
+                                class="p-1.5 rounded-lg hover:bg-surfaceHighlight transition" title="${p.is_hidden ? (window.I18n ? window.I18n.t('admin.actionShow') : 'Show') : (window.I18n ? window.I18n.t('admin.actionHide') : 'Hide')}">
+                            <i data-lucide="${p.is_hidden ? 'eye' : 'eye-off'}" class="w-4 h-4 ${p.is_hidden ? 'text-success' : 'text-danger'}"></i>
+                        </button>
+                        <button data-click="AdminPanel.ForumManager.togglePin" data-click-args="${encodeURIComponent(JSON.stringify([p.id, p.is_pinned]))}"
+                                class="p-1.5 rounded-lg hover:bg-surfaceHighlight transition" title="${p.is_pinned ? (window.I18n ? window.I18n.t('admin.actionUnpin') : 'Unpin') : (window.I18n ? window.I18n.t('admin.actionPin') : 'Pin')}">
+                            <i data-lucide="pin" class="w-4 h-4 ${p.is_pinned ? 'text-accent' : 'text-textMuted'}"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        },
+
+        doSearch() {
+            this.searchQuery = document.getElementById('forum-search')?.value?.trim() || '';
+            this.currentPage = 1;
+            this.loadPosts();
+        },
+
+        filterByStatus(status) {
+            this.statusFilter = status;
+            this.currentPage = 1;
+            this.loadPosts();
+        },
+
+        async toggleVisibility(postId, currentlyHidden) {
+            try {
+                await AppAPI.patch(`/api/admin/forum/posts/${postId}/visibility`, { is_hidden: !currentlyHidden });
+                if (typeof showToast === 'function')
+                    showToast(currentlyHidden ? 'Post shown' : 'Post hidden', 'success');
+                this.loadPosts();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        async togglePin(postId, currentlyPinned) {
+            try {
+                await AppAPI.patch(`/api/admin/forum/posts/${postId}/pin`, { is_pinned: !currentlyPinned });
+                if (typeof showToast === 'function')
+                    showToast(currentlyPinned ? 'Post unpinned' : 'Post pinned', 'success');
+                this.loadPosts();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        async loadReports() {
+            const el = document.getElementById('forum-content');
+            if (!el) return;
+
+            el.innerHTML =
+                '<div class="text-center text-textMuted text-sm py-8">Loading reports...</div>';
+
+            try {
+                const data = await AppAPI.get('/api/admin/forum/reports?status=pending&limit=50');
+                const reports = data.reports || [];
+
+                // Update badge
+                const badge = document.getElementById('forum-report-badge');
+                if (badge && data.total > 0) {
+                    badge.textContent = data.total;
+                    badge.classList.remove('hidden');
+                }
+
+                if (reports.length === 0) {
+                    el.innerHTML =
+                        '<div class="text-center text-textMuted text-sm py-8">No pending reports</div>';
+                    return;
+                }
+
+                el.innerHTML = `
+                    <div class="text-xs text-textMuted mb-2">${data.total} pending reports</div>
+                    <div class="space-y-3">${reports.map((r) => this._renderReportRow(r)).join('')}</div>
+                `;
+                AppUtils.refreshIcons();
+            } catch (e) {
+                el.innerHTML = `<div class="text-danger text-sm py-4 text-center">${SecurityUtils.escapeHTML(e.message || '')}</div>`;
+            }
+        },
+
+        _renderReportRow(r) {
+            const typeColors = {
+                spam: 'text-amber-600',
+                harassment: 'text-danger',
+                misinformation: 'text-accent',
+                scam: 'text-danger',
+                other: 'text-textMuted',
+            };
+            const color = typeColors[r.report_type] || 'text-textMuted';
+            const time = r.created_at ? new Date(r.created_at).toLocaleDateString() : '';
+
+            return `
+                <div class="p-3 bg-background/50 rounded-xl border border-borderSubtle">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] px-1.5 py-0.5 bg-surfaceHighlight rounded-full ${color} font-medium">${r.report_type}</span>
+                            <span class="text-[10px] text-textMuted">${r.content_type} #${r.content_id}</span>
+                        </div>
+                        <span class="text-[10px] text-textMuted">${time}</span>
+                    </div>
+                    ${r.content_preview ? `<div class="text-xs text-secondary mb-1 line-clamp-1">"${this._esc(r.content_preview)}"</div>` : ''}
+                    <div class="text-[10px] text-textMuted mb-2">Reported by ${this._esc(r.reporter_username)} | Votes: ${r.approve_count} approve / ${r.reject_count} reject</div>
+                    ${r.description ? `<div class="text-[10px] text-textMuted/80 mb-2 italic">${this._esc(r.description)}</div>` : ''}
+                    <div class="flex gap-2">
+                        <button data-click="AdminPanel.ForumManager.resolveReport" data-click-args="${encodeURIComponent(JSON.stringify([r.id, 'approved']))}"
+                                class="px-3 py-1 bg-danger/20 hover:bg-danger/30 text-danger rounded-lg text-xs transition">
+                            Approve (Hide Content)
+                        </button>
+                        <button data-click="AdminPanel.ForumManager.resolveReport" data-click-args="${encodeURIComponent(JSON.stringify([r.id, 'rejected']))}"
+                                class="px-3 py-1 bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted rounded-lg text-xs transition">
+                            Reject
+                        </button>
+                    </div>
+                </div>
+            `;
+        },
+
+        async resolveReport(reportId, decision) {
+            try {
+                const body = { decision };
+                if (decision === 'approved') body.violation_level = 'mild';
+
+                await AppAPI.post(`/api/admin/forum/reports/${reportId}/resolve`, body);
+                if (typeof showToast === 'function') showToast(`Report ${decision}`, 'success');
+                this.loadReports();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        _esc(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        },
+    },
+
+    // ========================================
+    // Config Manager (P1)
+    // ========================================
+    ConfigManager: {
+        configs: {},
+        editingKey: null,
+
+        render() {
+            const container = document.getElementById('admin-subpage-content');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <div id="config-groups">
+                            <div class="text-center text-textMuted text-sm py-8">Loading configs...</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bg-surface rounded-2xl border border-borderSubtle p-5">
+                            <h3 class="font-bold text-secondary mb-3 flex items-center gap-2 text-sm">
+                                <i data-lucide="history" class="w-4 h-4"></i> Recent Changes
+                            </h3>
+                            <div id="config-audit-log" class="space-y-2">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            AppUtils.refreshIcons();
+            this.loadConfigs();
+            this.loadAuditLog();
+        },
+
+        async loadConfigs() {
+            const el = document.getElementById('config-groups');
+            if (!el) return;
+
+            try {
+                const data = await AppAPI.get('/api/admin/config/all');
+                this.configs = data.configs_by_category || {};
+
+                const categoryLabels = {
+                    pricing: { icon: 'coins', label: 'Pricing' },
+                    limits: { icon: 'gauge', label: 'Limits' },
+                    general: { icon: 'settings', label: 'General' },
+                    scam_tracker: { icon: 'shield-alert', label: 'Scam Tracker' },
+                };
+
+                const order = ['pricing', 'limits', 'general', 'scam_tracker'];
+                const categories = [
+                    ...order.filter((k) => this.configs[k]),
+                    ...Object.keys(this.configs).filter((k) => !order.includes(k)),
+                ];
+
+                el.innerHTML = categories
+                    .map((cat) => {
+                        const info = categoryLabels[cat] || { icon: 'folder', label: cat };
+                        const items = this.configs[cat] || [];
+                        return `
+                        <div class="bg-surface rounded-2xl border border-borderSubtle p-5 mb-4">
+                            <h3 class="font-bold text-secondary mb-3 flex items-center gap-2 text-sm">
+                                <i data-lucide="${info.icon}" class="w-4 h-4"></i> ${info.label}
+                                <span class="text-[10px] text-textMuted font-normal">(${items.length})</span>
+                            </h3>
+                            <div class="space-y-2">
+                                ${items.map((cfg) => this._renderConfigRow(cfg)).join('')}
+                            </div>
+                        </div>
+                    `;
+                    })
+                    .join('');
+
+                AppUtils.refreshIcons();
+            } catch (e) {
+                el.innerHTML = `<div class="text-danger text-sm py-4 text-center">${SecurityUtils.escapeHTML(e.message || '')}</div>`;
+            }
+        },
+
+        _renderConfigRow(cfg) {
+            const isEditing = this.editingKey === cfg.key;
+            const val = cfg.value !== null && cfg.value !== undefined ? String(cfg.value) : '';
+            const desc = cfg.description || '';
+            const typeBadge = `<span class="text-[9px] px-1 py-0.5 bg-surfaceHighlight rounded text-textMuted/60">${cfg.value_type || 'string'}</span>`;
+
+            if (isEditing) {
+                return `
+                    <div class="p-3 bg-primary/5 rounded-xl border border-primary/20">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-medium text-secondary">${this._esc(cfg.key)}</span>
+                            ${typeBadge}
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="config-edit-input" type="text" value="${this._esc(val)}"
+                                   class="flex-1 bg-background border border-borderLight rounded-lg px-3 py-1.5 text-sm text-secondary focus:border-primary/50 focus:outline-none">
+                            <button data-click="AdminPanel.ConfigManager.saveConfig" data-click-arg="${encodeURIComponent(cfg.key)}"
+                                    class="px-3 py-1.5 bg-primary hover:bg-primary/80 text-background rounded-lg text-xs font-medium transition">Save</button>
+                            <button data-click="AdminPanel.ConfigManager.cancelEdit"
+                                    class="px-3 py-1.5 bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted rounded-lg text-xs transition">Cancel</button>
+                        </div>
+                        ${desc ? `<div class="text-[10px] text-textMuted mt-1">${this._esc(desc)}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="flex items-center gap-3 p-3 bg-background/50 rounded-xl border border-borderSubtle hover:border-borderLight transition group">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-medium text-secondary">${this._esc(cfg.key)}</span>
+                            ${typeBadge}
+                        </div>
+                        <div class="text-sm text-primary font-mono mt-0.5">${this._esc(val) || '<em class="text-textMuted">null</em>'}</div>
+                        ${desc ? `<div class="text-[10px] text-textMuted mt-0.5">${this._esc(desc)}</div>` : ''}
+                    </div>
+                    <button data-click="AdminPanel.ConfigManager.startEdit" data-click-arg="${encodeURIComponent(cfg.key)}"
+                            class="px-2 py-1 bg-surfaceHighlight hover:bg-surfaceHighlight rounded-lg text-xs text-textMuted opacity-0 group-hover:opacity-100 transition shrink-0">
+                        Edit
+                    </button>
+                </div>
+            `;
+        },
+
+        startEdit(key) {
+            this.editingKey = key;
+            this.loadConfigs(); // Re-render with edit mode
+        },
+
+        cancelEdit() {
+            this.editingKey = null;
+            this.loadConfigs();
+        },
+
+        async saveConfig(key) {
+            const input = document.getElementById('config-edit-input');
+            if (!input) return;
+
+            try {
+                await AppAPI.put(`/api/admin/config/${encodeURIComponent(key)}`, { value: input.value });
+                if (typeof showToast === 'function')
+                    showToast(`Config "${key}" updated`, 'success');
+                this.editingKey = null;
+                this.loadConfigs();
+                this.loadAuditLog();
+            } catch (e) {
+                if (typeof showToast === 'function') showToast(e.message, 'error');
+            }
+        },
+
+        async loadAuditLog() {
+            const el = document.getElementById('config-audit-log');
+            if (!el) return;
+
+            try {
+                const data = await AppAPI.get('/api/admin/config/audit?limit=30');
+                const logs = data.logs || [];
+
+                if (logs.length === 0) {
+                    el.innerHTML =
+                        '<div class="text-xs text-textMuted text-center py-4">No changes yet</div>';
+                    return;
+                }
+
+                el.innerHTML = logs
+                    .map((l) => {
+                        const time = l.changed_at ? new Date(l.changed_at).toLocaleString() : '';
+                        return `
+                        <div class="text-[10px] p-2 bg-background/50 rounded-lg border border-borderSubtle">
+                            <div class="flex justify-between mb-0.5">
+                                <span class="text-secondary font-medium truncate">${this._esc(l.key)}</span>
+                                <span class="text-textMuted/60 shrink-0 ml-2">${time}</span>
+                            </div>
+                            <div class="text-textMuted">
+                                ${l.old_value ? `<span class="text-danger line-through">${this._esc(String(l.old_value).substring(0, 40))}</span> → ` : ''}
+                                <span class="text-success">${this._esc(String(l.new_value || '').substring(0, 40))}</span>
+                            </div>
+                            <div class="text-textMuted/50 mt-0.5">by ${this._esc(l.changed_by)}</div>
+                        </div>
+                    `;
+                    })
+                    .join('');
+            } catch (e) {
+                el.innerHTML =
+                    '<div class="text-xs text-danger text-center py-4">Failed to load</div>';
+            }
+        },
+
+        _esc(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        },
+    },
+};
+
+window.AdminPanel = AdminPanel;
+
+export { AdminPanel };

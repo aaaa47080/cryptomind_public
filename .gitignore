@@ -1,0 +1,145 @@
+# Environment Variables
+# ⚠️ 含真實值的 env 檔絕不進 git；只有 *.template（純 placeholder）可進。
+.env
+.env.local
+.env.production
+.env.production.local
+.env.*.local
+*.env.example
+# product.env.example 曾含真實密鑰（已改用 .env.production.template）
+product.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+!.claude/skills/
+
+# Logs
+*.log
+frontend_debug.log
+
+# Coverage
+htmlcov/
+.coverage
+
+# Test output artifacts
+test_results/
+
+# Agent harness working state
+.omo/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Database (local)
+*.db
+user_data.db
+
+# Archive (test/debug/temp files)
+_archive/
+
+# Build/Deploy artifacts
+# 注意：用 docs/*（排除內容）而非 docs/（排除目錄），才能用 ! 重新納入子目錄。
+docs/*
+!docs/codebook/
+!docs/plans/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git worktrees
+.worktrees/
+key.txt
+admin.txt
+payment_test.txt
+
+pw_test/
+.selenium_screenshot.py
+
+# API Key 加密配置 (敏感)
+config/api_key_encryption.json
+
+# JWT Keys (敏感)
+config/keys/
+
+# Windows artifacts
+nul
+
+# Backup/temp files
+*.bak
+*.copy.*
+*.local_backup
+*_original_*
+diff*.txt
+
+# OpenCode temp
+okxstock_agenttemp_context_plugin/
+
+# Node.js
+node_modules/
+dist/
+.gstack/
+
+# Snapshot / debug dumps
+chat-input-area
+forum-after-*
+forum-current
+forum-final-check
+forum-full-page
+forum-redesign*
+forum-scrolled*
+forum-tab-view
+tags-overflow-fix
+Dokxstock_agent_diff.txt
+.codex_tmp/
+test-results/
+test_results/
+
+# Archived dead code (no longer part of the active codebase)
+REMOVE/
+
+# Runtime token blacklist (bot-generated)
+data/revoked_tokens.json
+data/local_feedback.sqlite3
+data/learned_aliases.json
+# SecurityMonitor runtime output (core/security_monitor.py)
+data/security_events.jsonl
+data/security_events.jsonl.*
+tests/scenarios/results_*.json
+tests/scenarios/_run*.log
+
+
+# Agent tooling artifacts
+.zcode/
+.codegraph/
+.codex-artifacts/
+
+# Local working docs / scratch (not part of this repo)
+security-test-output.txt
+ELEVATOR_PITCH.md
+PLATFORM_INTRO.md
+RECRUITING.md
+hackathon_報名資料.*
+
+# Playwright/測試截圖（root 層，不該進 repo；store-assets/ 等子目錄 png 不受影響）
+/*.png
+
+# 測試截圖/審查素材（本地保留，不入 repo）
+review-assets/
+admin-mobile-console.txt
+*.playwright-mcp/
+
+# Mimosa 安全掃描工作區（本地）
+.mimosa/

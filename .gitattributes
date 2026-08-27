@@ -1,0 +1,3 @@
+# cron 對 CRLF 零容忍，強制這些檔永遠 LF（不論貢獻者的 autocrlf 設定）。
+crontab.txt text eol=lf
+Dockerfile.cron text eol=lf

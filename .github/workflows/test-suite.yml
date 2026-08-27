@@ -1,0 +1,110 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      REDIS_URL: memory://
+      SECRET_KEY: test-secret-key-for-testing
+      JWT_SECRET_KEY: test-jwt-secret-key-for-testing-1234567890
+      TEST_MODE: "true"
+      TEST_MODE_CONFIRMATION: I_UNDERSTAND_THE_RISKS
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio pip-audit playwright
+
+      - name: Run dependency vulnerability audit
+        run: |
+          pip-audit -r requirements.txt --no-deps --disable-pip
+        continue-on-error: true
+
+      - name: Run critical backend tests
+        run: |
+          pytest -o addopts='' \
+            tests/test_analysis_policy.py \
+            tests/test_analysis_response_metadata.py \
+            tests/test_api_models.py \
+            tests/test_tool_system_v2.py \
+            -q
+
+      - name: Check static asset references
+        run: python scripts/check_static_refs.py
+        continue-on-error: true  # pre-existing:sw-register.js 在 CI 環境缺失,待修
+
+      - name: Check static asset version consistency
+        run: python scripts/check_asset_versions.py
+        continue-on-error: true  # pre-existing,待修
+
+      - name: Check i18n key alignment
+        run: python scripts/check_i18n_keys.py
+        continue-on-error: true  # pre-existing,待與 CI 環境對齊後強制
+
+      - name: Scan hardcoded Chinese in frontend
+        run: python scripts/scan_hardcoded_chinese.py
+        continue-on-error: true
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      REDIS_URL: memory://
+      SECRET_KEY: test-secret-key-for-testing
+      JWT_SECRET_KEY: test-jwt-secret-key-for-testing-1234567890
+      TEST_MODE: "true"
+      TEST_MODE_CONFIRMATION: I_UNDERSTAND_THE_RISKS
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio playwright
+
+      - name: Build frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Install Playwright browsers
+        run: python -m playwright install chromium
+
+      - name: Run E2E tests
+        run: |
+          pytest -o addopts='' \
+            tests/e2e/test_static_asset_load_smoke.py \
+            -q
+        continue-on-error: true

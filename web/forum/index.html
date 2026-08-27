@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>CryptoMind Forum</title>
+    <link rel="icon" type="image/png" href="/static/img/title_icon.png" />
+    <link rel="stylesheet" href="/static/css/tailwind-built.css">
+    <script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js" crossorigin="anonymous" integrity="sha384-OCCT+KZFt2FsqTxlTd8CUSq86zW/ZKmV0oe7qj36oye2CDbbVuxIXTY20t/u9LJt"></script>
+    <script src="https://unpkg.com/lucide@0.577.0" crossorigin="anonymous" integrity="sha384-orgVf2eX2+m1zKAOIi09hD0W6GtVhoOUmqDK+sysYB2JTZ4vS86j4jm+X7a4Nnei"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=15" />
+    <script src="/static/config.js"></script>
+    <script src="/static/js/logger.js"></script>
+    <script src="/static/js/click-delegator.js?v=2"></script>
+    <style>
+        .scroll-x-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scroll-x-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+    <!-- early-init: 防 FOUC + 預設主題（與主站共用 localStorage.selectedTheme） -->
+    <script src="/js/early-init.js"></script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden bg-background text-textMain flex flex-col" data-page="index">
+    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-[320px] bg-[linear-gradient(180deg,rgba(0,152,234,0.14),transparent)]"></div>
+    <div aria-hidden="true" class="pointer-events-none absolute -left-16 top-24 h-40 w-40 rounded-full bg-primary/8 blur-3xl"></div>
+
+    <nav class="sticky top-0 z-50 border-b border-borderSubtle bg-background/94 px-4 py-3 backdrop-blur-xl">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/static/index.html" class="p-1.5 hover:bg-surfaceHighlight rounded-full text-textMuted hover:text-primary transition">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                </a>
+                <span class="font-bold text-base text-primary tracking-wide">CryptoMind</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <div class="auth-only hidden flex items-center gap-1">
+                    <a href="/static/forum/dashboard.html" class="p-1.5 hover:bg-surfaceHighlight rounded-full text-textMuted hover:text-primary transition">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                    </a>
+                    <a href="/static/forum/create.html" class="flex items-center gap-1 bg-primary/15 hover:bg-primary/25 text-primary px-3 py-1.5 rounded-full text-sm font-bold transition">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        <span data-i18n="forum.postBtn">Post</span>
+                    </a>
+                </div>
+                <div class="guest-only">
+                    <button data-click="safeTonLogin" class="bg-primary/15 hover:bg-primary/25 text-primary px-3 py-1.5 rounded-full text-sm font-bold transition" data-i18n="login.login">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sticky top-[52px] z-40 bg-background/96 backdrop-blur-xl border-b border-borderSubtle">
+        <div class="max-w-3xl mx-auto px-4 pt-4 pb-3">
+            <!-- Header Row -->
+            <div class="flex items-center justify-between mb-3">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-bold">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    Community Board
+                </span>
+                    <span class="text-textMuted/60 text-sm hidden sm:block" data-i18n="forum.tagline">Share insights, ask questions, learn</span>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="rounded-2xl border border-borderSubtle bg-surface/60 p-4 backdrop-blur-sm">
+                <div class="flex items-center gap-3 overflow-x-auto scroll-x-hide pb-2">
+                    <select id="category-filter"
+                        class="appearance-none shrink-0 rounded-xl border border-borderLight bg-background/80 px-4 py-2.5 text-xs font-bold text-textMuted outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20">
+                        <option value="" data-i18n="forum.allCategories">All Categories</option>
+                        <option value="analysis" data-i18n="forum.categoryAnalysis">Analysis</option>
+                        <option value="question" data-i18n="forum.categoryQuestion">Question</option>
+                        <option value="tutorial" data-i18n="forum.categoryTutorial">Tutorial</option>
+                        <option value="news" data-i18n="forum.categoryNews">News</option>
+                        <option value="chat" data-i18n="forum.categoryChat">Chat</option>
+                        <option value="insight" data-i18n="forum.categoryInsight">Insight</option>
+                    </select>
+                    <div id="trending-tags" class="flex items-center gap-2.5 min-w-0 overflow-x-auto scroll-x-hide flex-1">
+                        <span class="text-xs text-textMuted/40 italic" data-i18n="forum.loadingTags">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Active Filter Indicator -->
+                <div id="active-post-filters" class="post-filter-indicator hidden mt-3 pt-3 border-t border-borderSubtle flex items-center gap-2.5">
+                    <span class="text-xs text-textMuted/60" data-i18n="forum.filtered">Filtered:</span>
+                    <span id="active-post-filters-text" class="post-filter-text text-xs font-medium text-primary bg-primary/10 px-3.5 py-1.5 rounded-full border border-primary/15"></span>
+                    <button class="post-filter-clear text-xs text-textMuted hover:text-primary transition p-1 ml-auto" type="button">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats Row -->
+            <div class="mt-4 grid grid-cols-3 gap-3">
+                <div class="rounded-xl border border-borderSubtle bg-surface/40 p-3 text-center">
+                    <div class="text-lg font-bold text-primary" id="forum-stat-posts">--</div>
+                    <div class="text-[10px] text-textMuted/60 uppercase tracking-wider" data-i18n="forum.statPosts">Posts</div>
+                </div>
+                <div class="rounded-xl border border-borderSubtle bg-surface/40 p-3 text-center">
+                    <div class="text-lg font-bold text-accent" id="forum-stat-users">--</div>
+                    <div class="text-[10px] text-textMuted/60 uppercase tracking-wider" data-i18n="forum.statUsers">Users</div>
+                </div>
+                <div class="rounded-xl border border-borderSubtle bg-surface/40 p-3 text-center">
+                    <div class="text-lg font-bold text-success" id="forum-stat-comments">--</div>
+                    <div class="text-[10px] text-textMuted/60 uppercase tracking-wider" data-i18n="forum.statComments">Replies</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="relative z-10 flex-1 max-w-3xl mx-auto w-full px-3 py-6 pb-28">
+        <div class="post-filter-indicator hidden mb-5 flex items-center gap-2.5">
+                    <span class="text-xs text-textMuted/60" data-i18n="forum.filterLabel">Filter:</span>
+            <span class="post-filter-text text-xs font-medium text-primary bg-primary/10 px-3.5 py-1.5 rounded-full border border-primary/15"></span>
+            <button class="post-filter-clear text-xs text-textMuted hover:text-primary transition" type="button">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+        </div>
+
+        <div id="post-list" class="space-y-5"></div>
+    </main>
+
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="true" class="fixed z-[110] flex flex-col gap-3 pointer-events-none bottom-4 left-4 right-4 items-center md:bottom-auto md:top-24 md:left-auto md:right-4 md:items-end" style="bottom: var(--shell-toast-bottom, calc(1rem + env(safe-area-inset-bottom, 0px)))"></div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-surface w-full max-w-sm max-h-[80dvh] overflow-y-auto custom-scrollbar p-6 rounded-3xl border border-borderLight shadow-2xl">
+            <div id="confirm-modal-icon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-danger/20">
+                <i data-lucide="alert-circle" class="w-8 h-8 text-danger"></i>
+            </div>
+            <h3 id="confirm-modal-title" class="text-xl font-bold text-center text-secondary mb-2"><span data-i18n="common.confirm">Confirm</span></h3>
+            <p id="confirm-modal-message" class="text-textMuted text-center text-sm mb-6">Are you sure?</p>
+            <div id="confirm-modal-buttons" class="flex gap-3">
+                <button id="confirm-modal-cancel" class="flex-1 py-3 bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted font-bold rounded-2xl transition border border-borderSubtle">Cancel</button>
+                <button id="confirm-modal-confirm" class="flex-1 py-3 bg-primary hover:brightness-110 text-background font-bold rounded-2xl transition shadow-lg"><span data-i18n="common.confirm">Confirm</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/pages/forum-index.js"></script>    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (window.I18n) {
+                try { await window.I18n.init(); } catch (e) { console.error('[Forum] i18n Init Error:', e); }
+            }
+            if (typeof AuthManager !== 'undefined') {
+                await AuthManager.init();
+            }
+            if (typeof ForumApp !== 'undefined') {
+                ForumApp.init();
+            }
+            lucide.createIcons();
+        });
+    </script>
+    <!-- 子頁主題切換鈕（右上角） -->
+    <script src="/js/components/ThemeToggle.js"></script>
+    <script src="/js/site-sidebar.js?v=1"></script>
+</body>
+</html>

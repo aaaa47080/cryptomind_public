@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - CryptoMind</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <script src="/js/early-init.js"></script>
+<style>
+        :root {
+            color-scheme: light;
+            --legal-bg: #F5F5F7;
+            --legal-surface: #FFFFFF;
+            --legal-text: #17171C;
+            --legal-text-muted: #4A4C54;
+            --legal-border: rgba(0,0,0,0.1);
+            --legal-primary: #2563EB;
+            --legal-code-bg: #EEEEF0;
+            --legal-accent-soft: rgba(37,99,235,0.08);
+        }
+        html.dark {
+            color-scheme: dark;
+            --legal-bg: #14161F;
+            --legal-surface: #1D202B;
+            --legal-text: #FFFDF9;
+            --legal-text-muted: #A7A9B2;
+            --legal-border: rgba(255,253,249,0.1);
+            --legal-primary: #2563EB;
+            --legal-code-bg: #10121A;
+            --legal-accent-soft: rgba(37,99,235,0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+            background: var(--legal-bg);
+            color: var(--legal-text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: var(--legal-surface);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--legal-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: var(--legal-accent-soft);
+            border: 1px solid var(--legal-primary);
+            color: var(--legal-text);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .back-btn:hover {
+            background: var(--legal-accent-soft);
+        }
+
+        .navbar h1 {
+            font-size: 1.2rem;
+            font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .lang-toggle {
+            background: var(--legal-primary);
+            border: none;
+            color: #FFFFFF;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: transform 0.3s;
+        }
+
+        .lang-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 6rem;
+        }
+
+        .prose h2 {
+            color: var(--legal-text);
+            margin: 2rem 0 1rem;
+            font-size: 1.5rem;
+            font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+            border-bottom: 2px solid var(--legal-primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .prose h3 {
+            color: var(--legal-text-muted);
+            margin: 1.5rem 0 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .prose p,
+        .prose ul {
+            margin: 0.8rem 0;
+            color: var(--legal-text-muted);
+        }
+
+        .prose ul {
+            padding-left: 2rem;
+        }
+
+        .prose li {
+            margin: 0.5rem 0;
+        }
+
+        .prose strong {
+            color: var(--legal-text);
+        }
+
+        .prose a {
+            color: var(--legal-primary);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .prose a:hover {
+            color: var(--legal-primary);
+        }
+
+        .footer {
+            background: var(--legal-surface);
+            padding: 2rem 1.5rem;
+            border-top: 1px solid var(--legal-border);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--legal-primary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--legal-primary);
+        }
+
+        .copyright {
+            color: var(--legal-text-muted);
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .effective-date {
+            background: var(--legal-accent-soft);
+            padding: 1rem;
+            border-left: 3px solid var(--legal-primary);
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .highlight {
+            background: rgba(250, 173, 20, 0.14);
+            border-left: 3px solid #ffd700;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .legal-notice {
+            background: var(--legal-accent-soft);
+            border-left: 3px solid var(--legal-primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="back-btn" data-click="goHome"><span data-zh="← 返回" data-zh-cn="← 返回" data-en="← Back" data-ru="← Назад">← 返回</span></button>
+            <h1 id="nav-title"><span data-zh="隱私政策" data-zh-cn="隐私政策" data-en="Privacy Policy" data-ru="Политика конфиденциальности">隱私政策</span></h1>
+        </div>
+        <button class="lang-toggle" data-click="toggleLanguage">
+            🌐 <span id="lang-label">English</span>
+        </button>
+    </nav>
+
+    <div class="container">
+        <div id="content" class="prose">
+            <div class="effective-date">
+                <strong><span data-zh="生效日期" data-zh-cn="生效日期" data-en="Effective Date" data-ru="Дата вступления в силу">生效日期</span>：</strong>2026年3月5日（<span data-zh="最後更新" data-zh-cn="最后更新" data-en="Last Updated" data-ru="Последнее обновление">最後更新</span>）<br>
+                <strong><span data-zh="版本" data-zh-cn="版本" data-en="Version" data-ru="Версия">版本</span>：</strong>v2.1
+            </div>
+
+            <div class="legal-notice">
+                <strong data-zh="🔗 TON Connect 生態系聲明" data-zh-cn="🔗 TON Connect 生态系统声明" data-en="🔗 TON Connect Ecosystem Statement" data-ru="🔗 Заявление об экосистеме TON Connect">🔗 TON Connect 生態系聲明</strong><br>
+                <span data-zh="CryptoMind 是 TON Connect 生態系的一部分。我們使用 TON Connect SDK 進行身份驗證和支付處理。您的部分資料將與 TON Connect 共享，受其 TON Connect 隱私權政策約束。" data-zh-cn="CryptoMind 是 TON Connect 生态系统的一部分。我们使用 TON Connect SDK 进行身份验证和支付处理。您的部分数据将与 TON Connect 共享，受其 TON Connect 隐私政策约束。" data-en="CryptoMind is part of the TON Connect ecosystem. We use the TON Connect SDK for identity verification and payment processing. Some of your data will be shared with TON Connect and governed by its Privacy Policy." data-ru="CryptoMind является частью экосистемы TON Connect. Мы используем TON Connect SDK для проверки личности и обработки платежей. Часть ваших данных будет передана TON Connect и регулируется её политикой конфиденциальности.">CryptoMind 是 TON Connect 生態系的一部分。我們使用 TON Connect SDK 進行身份驗證和支付處理。您的部分資料將與 TON Connect 共享，受其 TON Connect 隱私權政策約束。</span>
+            </div>
+
+            <p><span data-zh="CryptoMind 重視您的隱私。本政策說明我們如何收集、使用和保護您的個人資料。" data-zh-cn="CryptoMind 重视您的隐私。本政策说明我们如何收集、使用和保护您的个人资料。" data-en="CryptoMind values your privacy. This policy explains how we collect, use, and protect your personal data." data-ru="CryptoMind ценит вашу конфиденциальность. Эта политика объясняет, как мы собираем, используем и защищаем ваши персональные данные.">CryptoMind 重視您的隱私。本政策說明我們如何收集、使用和保護您的個人資料。</span></p>
+
+            <div class="legal-notice">
+                <strong data-zh="📋 個人資料保護法（PDPA）合規揭露" data-zh-cn="📋 个人资料保护法（PDPA）合规揭露" data-en="📋 Personal Data Protection Act (PDPA) Compliance Disclosure" data-ru="📋 Раскрытие информации о соответствии Закону о защите персональных данных (PDPA)">📋 個人資料保護法（PDPA）合規揭露</strong><br>
+                <span data-zh="依據中華民國《個人資料保護法》第 15 條，本平台於收集您的個人資料時，應明確告知以下事項：" data-zh-cn="依据中华民国《个人资料保护法》第 15 条，本平台于收集您的个人资料时，应明确告知以下事项：" data-en="Under Article 15 of the ROC Personal Data Protection Act, when collecting your personal data, this Platform shall clearly inform you of the following:" data-ru="Согласно статье 15 Закона Китайской Республики (Тайвань) о защите персональных данных, при сборе ваших персональных данных Платформа обязана ясно сообщить вам следующее:">依據中華民國《個人資料保護法》第 15 條，本平台於收集您的個人資料時，應明確告知以下事項：</span>
+                <ul style="margin-top: 0.5rem;">
+                    <li><strong><span data-zh="收集者名稱" data-zh-cn="收集者名称" data-en="Data Collector Name" data-ru="Наименование сборщика данных">收集者名稱</span></strong>：<span data-zh="CryptoMind（本平台營運團隊）" data-zh-cn="CryptoMind（本平台营运团队）" data-en="CryptoMind (this platform's operating team)" data-ru="CryptoMind (команда, обслуживающая платформу)">CryptoMind（本平台營運團隊）</span></li>
+                    <li><strong><span data-zh="收集目的" data-zh-cn="收集目的" data-en="Purpose of Collection" data-ru="Цель сбора">收集目的</span></strong>：<span data-zh="帳戶識別、支付處理、社群互動、AI 分析服務、安全防護" data-zh-cn="账户识别、支付处理、社群互动、AI 分析服务、安全防护" data-en="Account identification, payment processing, community interaction, AI analysis services, security protection" data-ru="Идентификация аккаунта, обработка платежей, взаимодействие в сообществе, услуги AI-анализа, защита безопасности">帳戶識別、支付處理、社群互動、AI 分析服務、安全防護</span></li>
+                    <li><strong><span data-zh="資料類別" data-zh-cn="资料类别" data-en="Categories of Data" data-ru="Категории данных">資料類別</span></strong>：<span data-zh="TON 錢包地址、暱稱、發文/評論/打賞記錄、私人訊息、API 請求日誌、好友清單" data-zh-cn="TON 钱包地址、昵称、发文/评论/打赏记录、私人讯息、API 请求日志、好友清单" data-en="TON wallet address, nickname, post/comment/tip records, private messages, API request logs, friends list" data-ru="Адрес кошелька TON, никнейм, записи постов/комментариев/чаевых, личные сообщения, журналы API-запросов, список друзей">TON 錢包地址、暱稱、發文/評論/打賞記錄、私人訊息、API 請求日誌、好友清單</span></li>
+                    <li><strong><span data-zh="使用期間/地區/對象/方式" data-zh-cn="使用期间/地区/对象/方式" data-en="Retention Period/Area/Subject/Method" data-ru="Срок/регион/получатели/способ использования">使用期間/地區/對象/方式</span></strong>：<span data-zh="帳戶存續期間 + 保留期限（見第 6 條）；資料存儲於台灣伺服器及 TON Connect 全球基礎設施；僅供本平台及 TON Connect 使用" data-zh-cn="账户存续期间 + 保留期限（见第 6 条）；数据存储于台湾服务器及 TON Connect 全球基础设施；仅供本平台及 TON Connect 使用" data-en="During account lifetime + retention period (see Section 6); data stored on Taiwan servers and TON Connect global infrastructure; for Platform and TON Connect use only" data-ru="В течение срока существования аккаунта + срок хранения (см. раздел 6); данные хранятся на серверах на Тайване и в глобальной инфраструктуре TON Connect; используются только Платформой и TON Connect">帳戶存續期間 + 保留期限（見第 6 條）；資料存儲於台灣伺服器及 TON Connect 全球基礎設施；僅供本平台及 TON Connect 使用</span></li>
+                    <li><strong><span data-zh="您的權利（第 3 條）" data-zh-cn="您的权利（第 3 条）" data-en="Your Rights (Section 3)" data-ru="Ваши права (раздел 3)">您的權利（第 3 條）</span></strong>：<span data-zh="查詢/閱覽、製給複製本、補充/更正、停止收集/處理/利用" data-zh-cn="查询/阅览、制给复制本、补充/更正、停止收集/处理/利用" data-en="Inquiry/Access, copy production, supplement/correction, stop collection/processing/utilization" data-ru="Запрос/доступ, получение копии, дополнение/исправление, прекращение сбора/обработки/использования">查詢/閱覽、製給複製本、補充/更正、停止收集/處理/利用</span></li>
+                    <li><strong><span data-zh="不提供之影響" data-zh-cn="不提供之影响" data-en="Consequence of Non-Provision" data-ru="Последствия непредоставления">不提供之影響</span></strong>：<span data-zh="若不提供錢包地址，將無法註冊及使用本平台服務" data-zh-cn="若不提供钱包地址，将无法注册及使用本平台服务" data-en="If you do not provide your wallet address, you cannot register or use this Platform's services" data-ru="Если вы не предоставите адрес кошелька, вы не сможете зарегистрироваться и пользоваться услугами Платформы">若不提供錢包地址，將無法註冊及使用本平台服務</span></li>
+                </ul>
+            </div>
+
+            <h2 data-zh="1. 我們收集的資料" data-zh-cn="1. 我们收集的资料" data-en="1. Information We Collect" data-ru="1. Собираемая нами информация">1. 我們收集的資料</h2>
+            <h3 data-zh="1.1 身份資訊" data-zh-cn="1.1 身份信息" data-en="1.1 Identity Information" data-ru="1.1 Идентификационная информация">1.1 身份資訊</h3>
+            <ul>
+                <li><strong data-zh="TON 錢包地址" data-zh-cn="TON 钱包地址" data-en="TON wallet address" data-ru="Адрес кошелька TON">TON 錢包地址</strong>：<span data-zh="用於帳戶識別和交易記錄" data-zh-cn="用于账户识别和交易记录" data-en="Used for account identification and transaction records" data-ru="Используется для идентификации аккаунта и записи транзакций">用於帳戶識別和交易記錄</span></li>
+                <li><strong data-zh="暱稱與個人資料" data-zh-cn="昵称与个人资料" data-en="Nickname & Profile" data-ru="Никнейм и профиль">暱稱與個人資料</strong>：<span data-zh="您在平台上設定的顯示資訊" data-zh-cn="您在平台上设定的显示信息" data-en="Display information you set on the Platform" data-ru="Отображаемая информация, которую вы задали на Платформе">您在平台上設定的顯示資訊</span></li>
+            </ul>
+            <h3 data-zh="1.2 使用數據" data-zh-cn="1.2 使用数据" data-en="1.2 Usage Data" data-ru="1.2 Данные об использовании">1.2 使用數據</h3>
+            <ul>
+                <li><span data-zh="瀏覽記錄、功能使用習慣" data-zh-cn="浏览记录、功能使用习惯" data-en="Browsing history, feature usage patterns" data-ru="История просмотров, шаблоны использования функций">瀏覽記錄、功能使用習慣</span></li>
+                <li><span data-zh="論壇發文、評論、打賞記錄" data-zh-cn="论坛发文、评论、打赏记录" data-en="Forum posts, comments, tip records" data-ru="Посты форума, комментарии, записи о чаевых">論壇發文、評論、打賞記錄</span></li>
+                <li><span data-zh="詐騙檢舉與治理系統參與記錄" data-zh-cn="诈骗检举与治理系统参与记录" data-en="Scam reports and governance system participation records" data-ru="Отчёты о мошенничестве и записи участия в системе управления">詐騙檢舉與治理系統參與記錄</span></li>
+                <li><span data-zh="API 請求日誌（IP 位址、時間戳）" data-zh-cn="API 请求日志（IP 地址、时间戳）" data-en="API request logs (IP address, timestamp)" data-ru="Журналы API-запросов (IP-адрес, метка времени)">API 請求日誌（IP 位址、時間戳）</span></li>
+                <li><strong data-zh="私人訊息內容" data-zh-cn="私人讯息内容" data-en="Private message content" data-ru="Содержание личных сообщений">私人訊息內容</strong>：<span data-zh="您與其他用戶之間的聊天訊息，僅供雙方存取" data-zh-cn="您与其他用户之间的聊天讯息，仅供双方存取" data-en="Chat messages between you and other users, accessible only to both parties" data-ru="Сообщения чата между вами и другими пользователями, доступные только обеим сторонам">您與其他用戶之間的聊天訊息，僅供雙方存取</span></li>
+                <li><strong data-zh="好友與封鎖清單" data-zh-cn="好友与封锁清单" data-en="Friends & block list" data-ru="Список друзей и блокировки">好友與封鎖清單</strong>：<span data-zh="您的社交關係連結記錄" data-zh-cn="您的社交关系链接记录" data-en="Your social relationship link records" data-ru="Записи ваших социальных связей">您的社交關係連結記錄</span></li>
+            </ul>
+            <h3 data-zh="1.3 交易資訊" data-zh-cn="1.3 交易信息" data-en="1.3 Transaction Information" data-ru="1.3 Информация о транзакциях">1.3 交易資訊</h3>
+            <ul>
+                <li><span data-zh="TON 支付記錄（會員訂閱、發文費用、打賞）" data-zh-cn="TON 支付记录（会员订阅、发文费用、打赏）" data-en="TON payment records (membership subscriptions, post fees, tips)" data-ru="Записи платежей TON (подписка на членство, платные посты, чаевые)">TON 支付記錄（會員訂閱、發文費用、打賞）</span></li>
+                <li><span data-zh="交易金額、時間、收款方資訊" data-zh-cn="交易金额、时间、收款方信息" data-en="Transaction amount, time, payee information" data-ru="Сумма транзакции, время, информация о получателе">交易金額、時間、收款方資訊</span></li>
+            </ul>
+            <h3 data-zh="1.4 AI 分析使用記錄" data-zh-cn="1.4 AI 分析使用记录" data-en="1.4 AI Analysis Usage Records" data-ru="1.4 Записи использования AI-анализа">1.4 AI 分析使用記錄</h3>
+            <ul>
+                <li><span data-zh="您觸發 AI 市場脈動分析的幣種與時間記錄" data-zh-cn="您触发 AI 市场脉动分析的币种与时间记录" data-en="Cryptocurrency and timestamp records when you trigger AI market analysis" data-ru="Записи криптовалют и времени, когда вы запускаете AI-анализ рынка">您觸發 AI 市場脈動分析的幣種與時間記錄</span></li>
+                <li><span data-zh="台股、美股深度分析的查詢記錄" data-zh-cn="台股、美股深度分析的查询记录" data-en="Taiwan and US stock deep analysis query records" data-ru="Записи запросов глубокого анализа тайваньских и американских акций">台股、美股深度分析的查詢記錄</span></li>
+            </ul>
+
+            <div class="highlight">
+                <h3 data-zh="🔒 重要：API 金鑰安全性" data-zh-cn="🔒 重要：API 密钥安全性" data-en="🔒 Important: API Key Security" data-ru="🔒 Важно: безопасность API-ключей">🔒 重要：API 金鑰安全性</h3>
+                <p><strong data-zh="您的 OKX API 金鑰僅存儲在您的瀏覽器 localStorage 中，絕不上傳至我們的伺服器。" data-zh-cn="您的 OKX API 密钥仅存储在您的浏览器 localStorage 中，绝不上传至我们的服务器。" data-en="Your OKX API keys are stored only in your browser's localStorage and are never uploaded to our servers." data-ru="Ваши API-ключи OKX хранятся только в localStorage вашего браузера и никогда не загружаются на наши серверы.">您的 OKX API 金鑰僅存儲在您的瀏覽器 localStorage 中，絕不上傳至我們的伺服器。</strong></p>
+                <p><span data-zh="這表示：" data-zh-cn="这表示：" data-en="This means:" data-ru="Это означает:">這表示：</span></p>
+                <ul>
+                    <li>✅ <span data-zh="您的 API 金鑰只存在於您的裝置上" data-zh-cn="您的 API 密钥只存在于您的装置上" data-en="Your API keys exist only on your device" data-ru="Ваши API-ключи существуют только на вашем устройстве">您的 API 金鑰只存在於您的裝置上</span></li>
+                    <li>✅ <span data-zh="我們無法存取您的交易所帳戶" data-zh-cn="我们无法存取您的交易所账户" data-en="We cannot access your exchange account" data-ru="Мы не можем получить доступ к вашему аккаунту на бирже">我們無法存取您的交易所帳戶</span></li>
+                    <li>✅ <span data-zh="更換裝置需重新輸入 API 金鑰" data-zh-cn="更换装置需重新输入 API 密钥" data-en="Changing devices requires re-entering API keys" data-ru="При смене устройства потребуется повторно ввести API-ключи">更換裝置需重新輸入 API 金鑰</span></li>
+                    <li>✅ <span data-zh="清除瀏覽器快取將刪除本地金鑰" data-zh-cn="清除浏览器缓存将删除本地密钥" data-en="Clearing browser cache will delete local keys" data-ru="Очистка кэша браузера удалит локальные ключи">清除瀏覽器快取將刪除本地金鑰</span></li>
+                </ul>
+            </div>
+
+            <h2 data-zh="2. 資料使用方式" data-zh-cn="2. 资料使用方式" data-en="2. How We Use Your Data" data-ru="2. Как мы используем ваши данные">2. 資料使用方式</h2>
+            <h3 data-zh="2.1 服務提供" data-zh-cn="2.1 服务提供" data-en="2.1 Service Provision" data-ru="2.1 Предоставление услуг">2.1 服務提供</h3>
+            <ul>
+                <li><span data-zh="驗證身份並維護帳戶安全" data-zh-cn="验证身份并维护账户安全" data-en="Verify identity and maintain account security" data-ru="Проверка личности и обеспечение безопасности аккаунта">驗證身份並維護帳戶安全</span></li>
+                <li><span data-zh="提供個人化加密貨幣、台股、美股市場分析" data-zh-cn="提供个性化加密货币、台股、美股市场分析" data-en="Provide personalized cryptocurrency, Taiwan stock, and US stock market analysis" data-ru="Персонализированный анализ рынка криптовалют, тайваньских и американских акций">提供個人化加密貨幣、台股、美股市場分析</span></li>
+                <li><span data-zh="處理 TON 支付交易（會員訂閱、發文費用、打賞）" data-zh-cn="处理 TON 支付交易（会员订阅、发文费用、打赏）" data-en="Process TON payment transactions (membership subscriptions, post fees, tips)" data-ru="Обработка платёжных транзакций TON (подписка на членство, платные посты, чаевые)">處理 TON 支付交易（會員訂閱、發文費用、打賞）</span></li>
+                <li><span data-zh="提供 AI 市場脈動分析與深度研究報告" data-zh-cn="提供 AI 市场脉动分析与深度研究报告" data-en="Provide AI market analysis and in-depth research reports" data-ru="Предоставление AI-анализа рынка и глубоких аналитических отчётов">提供 AI 市場脈動分析與深度研究報告</span></li>
+                <li><span data-zh="維護好友關係、私訊通訊功能" data-zh-cn="维护好友关系、私讯通讯功能" data-en="Maintain friendships and private messaging functionality" data-ru="Поддержка дружеских связей и функции личных сообщений">維護好友關係、私訊通訊功能</span></li>
+            </ul>
+            <h3 data-zh="2.2 社群管理" data-zh-cn="2.2 社群管理" data-en="2.2 Community Management" data-ru="2.2 Управление сообществом">2.2 社群管理</h3>
+            <ul>
+                <li><span data-zh="偵測並防範詐騙、濫用行為" data-zh-cn="侦测并防范诈骗、滥用行为" data-en="Detect and prevent fraud and abuse" data-ru="Выявление и предотвращение мошенничества и злоупотреблений">偵測並防範詐騙、濫用行為</span></li>
+                <li><span data-zh="執行治理系統的懲罰與申訴機制" data-zh-cn="执行治理系统的惩罚与申诉机制" data-en="Enforce governance system penalties and appeal mechanisms" data-ru="Исполнение санкций и механизма апелляций системы управления">執行治理系統的懲罰與申訴機制</span></li>
+                <li><span data-zh="審核論壇內容是否符合" data-zh-cn="审核论坛内容是否符合" data-en="Review whether forum content complies with the" data-ru="Проверка соответствия контента форума">審核論壇內容是否符合</span> <a href="community-guidelines.html" class="text-primary hover:text-accent transition"><span data-zh="社群守則" data-zh-cn="社群守则" data-en="Community Guidelines" data-ru="Правилам сообщества">社群守則</span></a></li>
+            </ul>
+            <h3 data-zh="2.3 安全與防護" data-zh-cn="2.3 安全与防护" data-en="2.3 Security & Protection" data-ru="2.3 Безопасность и защита">2.3 安全與防護</h3>
+            <ul>
+                <li><span data-zh="監控可疑活動（異常登入、惡意檢舉）" data-zh-cn="监控可疑活动（异常登录、恶意检举）" data-en="Monitor suspicious activities (abnormal login, malicious reports)" data-ru="Мониторинг подозрительной активности (аномальные входы, злоумышленные жалобы)">監控可疑活動（異常登入、惡意檢舉）</span></li>
+                <li><span data-zh="維護系統穩定性與資料完整性" data-zh-cn="维护系统稳定性与资料完整性" data-en="Maintain system stability and data integrity" data-ru="Поддержание стабильности системы и целостности данных">維護系統穩定性與資料完整性</span></li>
+            </ul>
+
+            <h2 data-zh="3. 資料分享與第三方" data-zh-cn="3. 资料分享与第三方" data-en="3. Data Sharing & Third Parties" data-ru="3. Передача данных третьим лицам">3. 資料分享與第三方</h2>
+            <h3 data-zh="3.1 TON Connect（重要）" data-zh-cn="3.1 TON Connect（重要）" data-en="3.1 TON Connect (Important)" data-ru="3.1 TON Connect (важно)">3.1 TON Connect（重要）</h3>
+            <div class="legal-notice">
+                <p><span data-zh="我們使用 TON Connect SDK 進行身份驗證和支付處理。以下資料會與 TON Connect 共享：" data-zh-cn="我们使用 TON Connect SDK 进行身份验证和支付处理。以下数据会与 TON Connect 共享：" data-en="We use the TON Connect SDK for identity verification and payment processing. The following data will be shared with TON Connect:" data-ru="Мы используем TON Connect SDK для проверки личности и обработки платежей. Следующие данные передаются TON Connect:">我們使用 TON Connect SDK 進行身份驗證和支付處理。以下資料會與 TON Connect 共享：</span></p>
+                <ul>
+                    <li><span data-zh="您的 TON 錢包地址" data-zh-cn="您的 TON 钱包地址" data-en="Your TON wallet address" data-ru="Ваш адрес кошелька TON">您的 TON 錢包地址</span></li>
+                    <li><span data-zh="認證 Token（用於身份驗證）" data-zh-cn="认证 Token（用于身份验证）" data-en="Authentication token (for identity verification)" data-ru="Токен аутентификации (для проверки личности)">認證 Token（用於身份驗證）</span></li>
+                    <li><span data-zh="支付交易資訊（金額、時間）" data-zh-cn="支付交易信息（金额、时间）" data-en="Payment transaction information (amount, time)" data-ru="Информация о платёжных транзакциях (сумма, время)">支付交易資訊（金額、時間）</span></li>
+                </ul>
+                <p><span data-zh="這些資料受 TON Connect 隱私權政策約束。TON Connect 可能將資料儲存於全球伺服器。" data-zh-cn="这些数据受 TON Connect 隐私政策约束。TON Connect 可能把数据存储于全球服务器。" data-en="This data is governed by TON Connect's Privacy Policy. TON Connect may store data on global servers." data-ru="Эти данные регулируются политикой конфиденциальности TON Connect. TON Connect может хранить данные на серверах по всему миру.">這些資料受 TON Connect 隱私權政策約束。TON Connect 可能將資料儲存於全球伺服器。</span></p>
+            </div>
+            <h3 data-zh="3.2 OKX API" data-zh-cn="3.2 OKX API" data-en="3.2 OKX API" data-ru="3.2 OKX API">3.2 OKX API</h3>
+            <p><span data-zh="加密貨幣市場數據通過 OKX public API 獲取。我們不會將您的個人資訊發送給 OKX。" data-zh-cn="加密货币市场数据通过 OKX public API 获取。我们不会把您的个人信息发送给 OKX。" data-en="Cryptocurrency market data is obtained through the OKX public API. We will not send your personal information to OKX." data-ru="Данные рынка криптовалют получаются через публичный API OKX. Мы не передаём вашу личную информацию OKX.">加密貨幣市場數據通過 OKX public API 獲取。我們不會將您的個人資訊發送給 OKX。</span></p>
+            <h3 data-zh="3.3 yfinance（台股 / 美股資料）" data-zh-cn="3.3 yfinance（台股 / 美股资料）" data-en="3.3 yfinance (Taiwan / US Stock Data)" data-ru="3.3 yfinance (данные тайваньских / американских акций)">3.3 yfinance（台股 / 美股資料）</h3>
+            <p><span data-zh="台灣股市及美國股市資料通過 yfinance 開源套件獲取，屬延遲盤後資料。我們不會將您的個人資訊發送給 yfinance 或相關資料提供商。" data-zh-cn="台湾股市及美国股市资料通过 yfinance 开源套件获取，属延迟盘后资料。我们不会把您的个人信息发送给 yfinance 或相关资料提供商。" data-en="Taiwan and US stock market data is obtained through the yfinance open source library, which is delayed after-hours data. We will not send your personal information to yfinance or related data providers." data-ru="Данные тайваньской и американской фондовых бирж получаются через библиотеку с открытым кодом yfinance (отложенные данные после закрытия торгов). Мы не передаём вашу личную информацию yfinance или связанным поставщикам данных.">台灣股市及美國股市資料通過 yfinance 開源套件獲取，屬延遲盤後資料。我們不會將您的個人資訊發送給 yfinance 或相關資料提供商。</span></p>
+            <h3 data-zh="3.4 法律要求" data-zh-cn="3.4 法律要求" data-en="3.4 Legal Requirements" data-ru="3.4 Законные требования">3.4 法律要求</h3>
+            <p><span data-zh="在以下情況下，我們可能需要披露資料：" data-zh-cn="在以下情况下，我们可能需要披露资料：" data-en="In the following circumstances, we may need to disclose data:" data-ru="В следующих обстоятельствах нам может потребоваться раскрыть данные:">在以下情況下，我們可能需要披露資料：</span></p>
+            <ul>
+                <li><span data-zh="遵守法律義務或政府要求" data-zh-cn="遵守法律义务或政府要求" data-en="Comply with legal obligations or government requests" data-ru="Соблюдение правовых обязательств или требований государственных органов">遵守法律義務或政府要求</span></li>
+                <li><span data-zh="保護平台、用戶或公眾的權利與安全" data-zh-cn="保护平台、用户或公众的权利与安全" data-en="Protect the Platform's, users', or public's rights and safety" data-ru="Защита прав и безопасности Платформы, пользователей или общества">保護平台、用戶或公眾的權利與安全</span></li>
+                <li><span data-zh="調查涉嫌違法行為（詐騙、洗錢等）" data-zh-cn="调查涉嫌违法行为（诈骗、洗钱等）" data-en="Investigate suspected illegal activities (fraud, money laundering, etc.)" data-ru="Расследование подозреваемой противоправной деятельности (мошенничество, отмывание денег и т. д.)">調查涉嫌違法行為（詐騙、洗錢等）</span></li>
+                <li><span data-zh="回應 TON Connect 的合規要求" data-zh-cn="回应 TON Connect 的合规要求" data-en="Respond to TON Connect compliance requirements" data-ru="Ответ на требования соответствия TON Connect">回應 TON Connect 的合規要求</span></li>
+            </ul>
+
+            <h2 data-zh="4. 用戶權利" data-zh-cn="4. 用户权利" data-en="4. User Rights" data-ru="4. Права пользователей">4. 用戶權利</h2>
+            <h3 data-zh="4.1 存取與下載" data-zh-cn="4.1 存取与下载" data-en="4.1 Access & Download" data-ru="4.1 Доступ и скачивание">4.1 存取與下載</h3>
+            <p><span data-zh="您可以在「設定」頁面查看並下載您的個人資料。" data-zh-cn="您可以在「设定」页面查看并下载您的个人资料。" data-en="You can view and download your personal data on the Settings page." data-ru="Вы можете просмотреть и скачать свои персональные данные на странице настроек.">您可以在「設定」頁面查看並下載您的個人資料。</span></p>
+            <h3 data-zh="4.2 修改資料" data-zh-cn="4.2 修改资料" data-en="4.2 Modify Data" data-ru="4.2 Изменение данных">4.2 修改資料</h3>
+            <p><span data-zh="您可以隨時更新個人資料設定（暱稱、顯示圖片）。" data-zh-cn="您可以随时更新个人资料设定（昵称、显示图片）。" data-en="You can update your personal data settings (nickname, display picture) at any time." data-ru="Вы можете в любой момент обновить настройки профиля (никнейм, изображение).">您可以隨時更新個人資料設定（暱稱、顯示圖片）。</span></p>
+            <h3 data-zh="4.3 刪除帳戶" data-zh-cn="4.3 删除账户" data-en="4.3 Delete Account" data-ru="4.3 Удаление аккаунта">4.3 刪除帳戶</h3>
+            <p><span data-zh="您可以申請刪除帳戶。刪除後：" data-zh-cn="您可以申请删除账户。删除后：" data-en="You can apply to delete your account. After deletion:" data-ru="Вы можете подать заявку на удаление аккаунта. После удаления:">您可以申請刪除帳戶。刪除後：</span></p>
+            <ul>
+                <li><span data-zh="個人資料將被移除" data-zh-cn="个人资料将被移除" data-en="Personal data will be removed" data-ru="Персональные данные будут удалены">個人資料將被移除</span></li>
+                <li><span data-zh="論壇發文可能保留但匿名化（顯示為「已刪除用戶」）" data-zh-cn="论坛发文可能保留但匿名化（显示为「已删除用户」）" data-en="Forum posts may be retained but anonymized (displayed as 'Deleted User')" data-ru="Посты форума могут быть сохранены, но анонимизированы (отображаются как «Удалённый пользователь»)">論壇發文可能保留但匿名化（顯示為「已刪除用戶」）</span></li>
+                <li><strong data-zh="已發送的 TON 打賞無法撤回" data-zh-cn="已发送的 TON 打赏无法撤回" data-en="Sent TON tips cannot be withdrawn" data-ru="Отправленные чаевые TON невозможно отменить">已發送的 TON 打賞無法撤回</strong></li>
+                <li><span data-zh="已支付的會員費用不予退款" data-zh-cn="已支付的会员费用不予退款" data-en="Paid membership fees are non-refundable" data-ru="Уплаченные взносы за членство не возвращаются">已支付的會員費用不予退款</span></li>
+                <li><strong data-zh="TON Connect 端的資料需依其政策處理" data-zh-cn="TON Connect 端的资料需依其政策处理" data-en="Data on TON Connect's end must be handled according to its policy" data-ru="Данные на стороне TON Connect обрабатываются согласно её политике">TON Connect 端的資料需依其政策處理</strong></li>
+            </ul>
+
+            <h2 data-zh="5. Cookie 與追蹤技術" data-zh-cn="5. Cookie 与追踪技术" data-en="5. Cookies & Tracking Technology" data-ru="5. Cookies и технологии отслеживания">5. Cookie 與追蹤技術</h2>
+            <h3 data-zh="5.1 必要 Cookie" data-zh-cn="5.1 必要 Cookie" data-en="5.1 Necessary Cookies" data-ru="5.1 Необходимые cookies">5.1 必要 Cookie</h3>
+            <p><span data-zh="我們僅使用必要的 Cookie 來維護登入狀態和語言偏好。" data-zh-cn="我们仅使用必要的 Cookie 来维护登录状态和语言偏好。" data-en="We only use necessary cookies to maintain login status and language preferences." data-ru="Мы используем только необходимые cookies для поддержания состояния входа и языковых предпочтений.">我們僅使用必要的 Cookie 來維護登入狀態和語言偏好。</span></p>
+            <h3 data-zh="5.2 無廣告追蹤" data-zh-cn="5.2 无广告追踪" data-en="5.2 No Ad Tracking" data-ru="5.2 Без рекламного отслеживания">5.2 無廣告追蹤</h3>
+            <p><strong data-zh="我們不使用第三方廣告追蹤器或分析工具。" data-zh-cn="我们不使用第三方广告追踪器或分析工具。" data-en="We do not use third-party advertising trackers or analytics tools." data-ru="Мы не используем сторонние рекламные трекеры или аналитические инструменты.">我們不使用第三方廣告追蹤器或分析工具。</strong></p>
+
+            <h2 data-zh="6. 資料保留期限" data-zh-cn="6. 资料保留期限" data-en="6. Data Retention" data-ru="6. Срок хранения данных">6. 資料保留期限</h2>
+            <ul>
+                <li><strong data-zh="帳戶資料" data-zh-cn="账户资料" data-en="Account data" data-ru="Данные аккаунта">帳戶資料</strong>：<span data-zh="帳戶活躍期間 + 刪除後 30 天" data-zh-cn="账户活跃期间 + 删除后 30 天" data-en="During account activity + 30 days after deletion" data-ru="В период активности аккаунта + 30 дней после удаления">帳戶活躍期間 + 刪除後 30 天</span></li>
+                <li><strong data-zh="交易記錄" data-zh-cn="交易记录" data-en="Transaction records" data-ru="Записи транзакций">交易記錄</strong>：<span data-zh="7 年（符合金融法規要求）" data-zh-cn="7 年（符合金融法规要求）" data-en="7 years (compliant with financial regulations)" data-ru="7 лет (в соответствии с финансовыми нормативами)">7 年（符合金融法規要求）</span></li>
+                <li><strong data-zh="治理記錄" data-zh-cn="治理记录" data-en="Governance records" data-ru="Записи системы управления">治理記錄</strong>：<span data-zh="永久保留（防範重複違規）" data-zh-cn="永久保留（防范重复违规）" data-en="Permanently retained (to prevent repeated violations)" data-ru="Хранятся бессрочно (для предотвращения повторных нарушений)">永久保留（防範重複違規）</span></li>
+                <li><strong data-zh="API 日誌" data-zh-cn="API 日志" data-en="API logs" data-ru="Журналы API">API 日誌</strong>：<span data-zh="90 天" data-zh-cn="90 天" data-en="90 days" data-ru="90 дней">90 天</span></li>
+                <li><strong data-zh="TON Connect 資料" data-zh-cn="TON Connect 资料" data-en="TON Connect data" data-ru="Данные TON Connect">TON Connect 資料</strong>：<span data-zh="依 TON Connect 政策保留" data-zh-cn="依 TON Connect 政策保留" data-en="Retained per TON Connect policy" data-ru="Хранятся согласно политике TON Connect">依 TON Connect 政策保留</span></li>
+            </ul>
+
+            <h2 data-zh="7. 年齡限制" data-zh-cn="7. 年龄限制" data-en="7. Age Restrictions" data-ru="7. Возрастные ограничения">7. 年齡限制</h2>
+            <p><span data-zh="本平台不向 18 歲以下用戶提供服務。我們不會故意收集未成年人的個人資料。若發現未成年用戶，我們將立即刪除相關帳戶並通知 TON Connect。" data-zh-cn="本平台不向 18 岁以下用户提供服务。我们不会故意收集未成年人的个人资料。若发现未成年用户，我们将立即删除相关账户并通知 TON Connect。" data-en="This Platform does not provide services to users under 18. We do not intentionally collect personal data from minors. If a minor user is discovered, we will immediately delete the relevant account and notify TON Connect." data-ru="Платформа не предоставляет услуги пользователям младше 18 лет. Мы не собираем персональные данные несовершеннолетних намеренно. При обнаружении несовершеннолетнего пользователя мы немедленно удалим соответствующий аккаунт и уведомим TON Connect.">本平台不向 18 歲以下用戶提供服務。我們不會故意收集未成年人的個人資料。若發現未成年用戶，我們將立即刪除相關帳戶並通知 TON Connect。</span></p>
+
+            <h2 data-zh="8. 跨境資料傳輸" data-zh-cn="8. 跨境资料传输" data-en="8. Cross-Border Data Transfer" data-ru="8. Трансграничная передача данных">8. 跨境資料傳輸</h2>
+            <p><span data-zh="您的資料主要存儲在台灣伺服器。使用 TON Connect SDK 時，資料可能傳輸至 TON Connect 的全球基礎設施（可能位於美國或其他國家）。我們確保所有傳輸符合：" data-zh-cn="您的资料主要存储在台湾服务器。使用 TON Connect SDK 时，资料可能传输至 TON Connect 的全球基础设施（可能位于美国或其他国家）。我们确保所有传输符合：" data-en="Your data is primarily stored on Taiwan servers. When using the TON Connect SDK, data may be transferred to TON Connect's global infrastructure (possibly in the US or other countries). We ensure all transfers comply with:" data-ru="Ваши данные в основном хранятся на серверах на Тайване. При использовании TON Connect SDK данные могут передаваться в глобальную инфраструктуру TON Connect (возможно, в США или других странах). Мы обеспечиваем соответствие всех передач следующим требованиям:">您的資料主要存儲在台灣伺服器。使用 TON Connect SDK 時，資料可能傳輸至 TON Connect 的全球基礎設施（可能位於美國或其他國家）。我們確保所有傳輸符合：</span></p>
+            <ul>
+                <li><span data-zh="GDPR（歐盟通用數據保護條例）" data-zh-cn="GDPR（欧盟通用数据保护条例）" data-en="GDPR (EU General Data Protection Regulation)" data-ru="GDPR (Общий регламент по защите данных ЕС)">GDPR（歐盟通用數據保護條例）</span></li>
+                <li><span data-zh="台灣個人資料保護法" data-zh-cn="台湾个人资料保护法" data-en="Taiwan Personal Data Protection Act" data-ru="Тайваньский закон о защите персональных данных">台灣個人資料保護法</span></li>
+                <li><span data-zh="TON Connect 隱私政策要求" data-zh-cn="TON Connect 隐私政策要求" data-en="TON Connect Privacy Policy requirements" data-ru="Требования политики конфиденциальности TON Connect">TON Connect 隱私政策要求</span></li>
+            </ul>
+
+            <h2 data-zh="9. 資料安全措施" data-zh-cn="9. 资料安全措施" data-en="9. Data Security Measures" data-ru="9. Меры защиты данных">9. 資料安全措施</h2>
+            <ul>
+                <li><span data-zh="資料庫加密（AES-256）" data-zh-cn="数据库加密（AES-256）" data-en="Database encryption (AES-256)" data-ru="Шифрование базы данных (AES-256)">資料庫加密（AES-256）</span></li>
+                <li><span data-zh="HTTPS 加密傳輸（SSL/TLS）" data-zh-cn="HTTPS 加密传输（SSL/TLS）" data-en="HTTPS encrypted transmission (SSL/TLS)" data-ru="Шифрованная передача HTTPS (SSL/TLS)">HTTPS 加密傳輸（SSL/TLS）</span></li>
+                <li><span data-zh="定期安全審計與漏洞修補" data-zh-cn="定期安全审计与漏洞修补" data-en="Regular security audits and vulnerability patching" data-ru="Регулярные аудиты безопасности и устранение уязвимостей">定期安全審計與漏洞修補</span></li>
+                <li><span data-zh="限制員工存取權限（最小權限原則）" data-zh-cn="限制员工存取权限（最小权限原则）" data-en="Restrict employee access (principle of least privilege)" data-ru="Ограничение доступа сотрудников (принцип наименьших привилегий)">限制員工存取權限（最小權限原則）</span></li>
+                <li><span data-zh="API 金鑰不存儲於伺服器" data-zh-cn="API 密钥不存储于服务器" data-en="API keys are not stored on the server" data-ru="API-ключи не хранятся на сервере">API 金鑰不存儲於伺服器</span></li>
+            </ul>
+
+            <h2 data-zh="9.1 資料外洩通報" data-zh-cn="9.1 资料外泄通报" data-en="9.1 Data Breach Notification" data-ru="9.1 Уведомление об утечке данных">9.1 資料外洩通報</h2>
+            <p><span data-zh="若發生個人資料安全事件（資料外洩、未授權存取、損毀），本平台將：" data-zh-cn="若发生个人资料安全事件（资料外泄、未授权存取、损毁），本平台将：" data-en="In the event of a personal data security incident (data breach, unauthorized access, damage), the Platform will:" data-ru="В случае инцидента безопасности персональных данных (утечка, несанкционированный доступ, повреждение) Платформа:">若發生個人資料安全事件（資料外洩、未授權存取、損毀），本平台將：</span></p>
+            <ul>
+                <li><strong data-zh="立即啟動應變措施" data-zh-cn="立即启动应变措施" data-en="Immediately activate response measures" data-ru="Немедленно активирует меры реагирования">立即啟動應變措施</strong><span data-zh="，控制損害範圍並修復漏洞" data-zh-cn="，控制损害范围并修补漏洞" data-en=", control the damage scope and fix vulnerabilities" data-ru=", локализует масштаб ущерба и устраняет уязвимости">，控制損害範圍並修復漏洞</span></li>
+                <li><strong data-zh="於 72 小時內通知受影響用戶" data-zh-cn="于 72 小时内通知受影响用户" data-en="Notify affected users within 72 hours" data-ru="Уведомит затронутых пользователей в течение 72 часов">於 72 小時內通知受影響用戶</strong><span data-zh="，說明外洩範圍、可能影響及建議防護措施" data-zh-cn="，说明外泄范围、可能影响及建议防护措施" data-en=", explaining the scope, possible impacts, and recommended protective measures" data-ru=", объяснив масштаб, возможные последствия и рекомендуемые защитные меры">，說明外洩範圍、可能影響及建議防護措施</span></li>
+                <li><strong data-zh="依法向主管機關通報" data-zh-cn="依法向主管机关通报" data-en="Report to authorities as required by law" data-ru="Сообщит в уполномоченные органы в соответствии с законом">依法向主管機關通報</strong><span data-zh="（依個人資料保護法及未來「個人資料保護委員會」相關規定）" data-zh-cn="（依个人资料保护法及未来「个人资料保护委员会」相关规定）" data-en="(per the Personal Data Protection Act and future Personal Data Protection Commission regulations)" data-ru="(согласно закону о защите персональных данных и будущим регламентам Комитета по защите персональных данных)">（依個人資料保護法及未來「個人資料保護委員會」相關規定）</span></li>
+                <li><strong data-zh="保留事件紀錄" data-zh-cn="保留事件记录" data-en="Retain incident records" data-ru="Сохранит записи об инциденте">保留事件紀錄</strong><span data-zh="以供查核" data-zh-cn="以供查核" data-en=" for inspection" data-ru=" для проверки">以供查核</span></li>
+            </ul>
+            <p><span data-zh="通報方式：平台公告、電子郵件或站內通知。" data-zh-cn="通报方式：平台公告、电子邮件或站内通知。" data-en="Notification methods: Platform announcements, email, or in-app notifications." data-ru="Способы уведомления: объявления на платформе, электронная почта или уведомления в приложении.">通報方式：平台公告、電子郵件或站內通知。</span></p>
+
+            <h2 data-zh="10. 隱私政策變更" data-zh-cn="10. 隐私政策变更" data-en="10. Privacy Policy Changes" data-ru="10. Изменения политики конфиденциальности">10. 隱私政策變更</h2>
+            <p><span data-zh="我們可能更新本政策。重大變更將通過平台公告通知，並要求您重新確認同意。" data-zh-cn="我们可能更新本政策。重大变更将通过平台公告通知，并要求您重新确认同意。" data-en="We may update this policy. Major changes will be announced on the platform and require your re-confirmation." data-ru="Мы можем обновлять эту политику. Существенные изменения будут объявлены на платформе и потребуют вашего повторного подтверждения.">我們可能更新本政策。重大變更將通過平台公告通知，並要求您重新確認同意。</span></p>
+
+            <h2 data-zh="11. 聯絡我們" data-zh-cn="11. 联络我们" data-en="11. Contact Us" data-ru="11. Связь с нами">11. 聯絡我們</h2>
+            <p><span data-zh="如有隱私相關疑問或數據請求，請聯絡：" data-zh-cn="如有隐私相关疑问或数据请求，请联络：" data-en="For privacy questions or data requests, contact:" data-ru="По вопросам конфиденциальности или запросам данных обращайтесь:">如有隱私相關疑問或數據請求，請聯絡：</span></p>
+            <ul>
+                <li><span data-zh="平台論壇：私訊 " data-zh-cn="平台论坛：私讯 " data-en="Platform Forum: DM " data-ru="Форум платформы: личное сообщение ">平台論壇：私訊 </span><strong>@Admin</strong></li>
+                <li><span data-zh="平台網址：" data-zh-cn="平台网址：" data-en="Platform URL:" data-ru="Сайт платформы:">平台網址：</span><strong>cryptomind-ton.zeabur.app</strong></li>
+            </ul>
+
+            <div class="legal-notice" style="margin-top: 2rem;">
+                <strong data-zh="📎 相關政策連結" data-zh-cn="📎 相关政策链接" data-en="📎 Related Policy Links" data-ru="📎 Ссылки на связанные документы">📎 相關政策連結</strong>
+                <ul style="margin-top: 0.5rem;">
+                    <li><span data-zh="TON Connect 隱私權政策" data-zh-cn="TON Connect 隐私政策" data-en="TON Connect Privacy Policy" data-ru="Политика конфиденциальности TON Connect">TON Connect 隱私權政策</span></li>
+                    <li><span data-zh="TON Connect 服務條款" data-zh-cn="TON Connect 服务条款" data-en="TON Connect Terms of Service" data-ru="Условия обслуживания TON Connect">TON Connect 服務條款</span></li>
+                    <li><a href="terms-of-service.html" style="color: #0098EA;"><span data-zh="CryptoMind 服務條款" data-zh-cn="CryptoMind 服务条款" data-en="CryptoMind Terms of Service" data-ru="Условия обслуживания CryptoMind">CryptoMind 服務條款</span></a></li>
+                    <li><a href="community-guidelines.html" style="color: #0098EA;"><span data-zh="CryptoMind 社群守則" data-zh-cn="CryptoMind 社群守则" data-en="CryptoMind Community Guidelines" data-ru="Правила сообщества CryptoMind">CryptoMind 社群守則</span></a></li>
+                </ul>
+            </div>
+
+            <div class="legal-notice">
+                <span data-zh="語言版本說明：本政策提供繁體中文、簡體中文、英文及俄文版本。若各語言版本之間存在歧異，以英文版本為準。" data-zh-cn="语言版本说明：本政策提供繁体中文、简体中文、英文及俄文版本。若各语言版本之间存在歧异，以英文版本为准。" data-en="Language versions: This policy is provided in Traditional Chinese, Simplified Chinese, English, and Russian. In case of any discrepancy between versions, the English version shall prevail." data-ru="Языковые версии: эта политика предоставляется на традиционном китайском, упрощённом китайском, английском и русском языках. В случае расхождений между версиями преимущественную силу имеет английская версия.">語言版本說明：本政策提供繁體中文、簡體中文、英文及俄文版本。若各語言版本之間存在歧異，以英文版本為準。</span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="terms-of-service.html"><span data-zh="服務條款" data-zh-cn="服务条款" data-en="Terms of Service" data-ru="Условия обслуживания">服務條款</span></a>
+            <a href="privacy-policy.html"><span data-zh="隱私政策" data-zh-cn="隐私政策" data-en="Privacy Policy" data-ru="Политика конфиденциальности">隱私政策</span></a>
+            <a href="community-guidelines.html"><span data-zh="社群守則" data-zh-cn="社群守则" data-en="Community Guidelines" data-ru="Правила сообщества">社群守則</span></a>
+            <a href="/static/index.html"><span data-zh="返回平台" data-zh-cn="返回平台" data-en="Back to Platform" data-ru="Вернуться на платформу">返回平台</span></a>
+        </div>
+        <div class="copyright">
+            © 2026 CryptoMind. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+// 四語屬性系統（2026-08-20：原 data-zh/data-en 雙語升級）。
+// 屬性四語數量一致性由 tests/test_legal_i18n_parity.py 看守。
+var LEGAL_LANG_ATTR = {
+    'zh-TW': 'data-zh',
+    'zh-CN': 'data-zh-cn',
+    'en': 'data-en',
+    'ru': 'data-ru'
+};
+// 語言鈕循環順序與「下一語言」標籤
+var LEGAL_LANG_CYCLE = ['zh-TW', 'en', 'zh-CN', 'ru'];
+var LEGAL_NEXT_LABEL = { 'zh-TW': 'English', 'en': '简体中文', 'zh-CN': 'Русский', 'ru': '繁體中文' };
+
+function detectLegalLang() {
+    try {
+        var saved = localStorage.getItem('selectedLanguage');
+        if (saved && LEGAL_LANG_ATTR[saved]) return saved;
+    } catch (e) { /* ignore */ }
+    var nav = (navigator.language || 'en');
+    if (nav.indexOf('zh') === 0) {
+        return /CN|Hans|SG/.test(nav) ? 'zh-CN' : 'zh-TW';
+    }
+    if (nav.indexOf('ru') === 0) return 'ru';
+    return 'en';
+}
+
+function applyLegalLang(lang) {
+    if (!LEGAL_LANG_ATTR[lang]) lang = 'zh-TW';
+    var attr = LEGAL_LANG_ATTR[lang];
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-zh]').forEach(function (el) {
+        var text = el.getAttribute(attr) || el.getAttribute('data-zh') || '';
+        if (text) el.textContent = text;
+    });
+    var label = document.getElementById('lang-label');
+    if (label) label.textContent = LEGAL_NEXT_LABEL[lang] || 'English';
+}
+
+function toggleLanguage() {
+    var cur = detectLegalLang();
+    var idx = LEGAL_LANG_CYCLE.indexOf(cur);
+    var next = LEGAL_LANG_CYCLE[(idx + 1) % LEGAL_LANG_CYCLE.length];
+    try { localStorage.setItem('selectedLanguage', next); } catch (e) { /* ignore */ }
+    applyLegalLang(next);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    applyLegalLang(detectLegalLang());
+});
+
+// 與主站 i18n 互通：站內切語言後，legal 頁跟著換
+window.addEventListener('languageChanged', function (e) {
+    var lang = (e && e.detail && e.detail.language) || detectLegalLang();
+    applyLegalLang(lang);
+});
+</script>
+    <script src="/js/components/ThemeToggle.js"></script>
+</body>
+
+</html>

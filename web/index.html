@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- CSP is enforced via HTTP header in api/middleware_setup.py (security_headers_middleware) -->
+    <!-- No <meta> CSP tag here to avoid conflicts with the stricter HTTP header -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- theme-color：由 ThemeSwitcher.applyTheme 依「實際生效主題」動態設定，
+         不用 media=prefers-color-scheme（那會跟 OS 走，與 app 可選主題不一致） -->
+    <meta name="theme-color" content="#FFFDF9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- SEO Meta Tags -->
+    <title>CryptoMind - AI Crypto Analyst | AI-Powered Crypto Analysis Platform</title>
+    <meta name="description" content="CryptoMind is an AI-driven cryptocurrency analysis platform providing real-time market analysis, intelligent trading recommendations, and in-depth research reports. Supports Bitcoin, Ethereum, TON and other major cryptocurrencies.">
+    <meta name="keywords" content="cryptocurrency, AI analysis, Bitcoin, Ethereum, TON, TON Connect, trading analysis, blockchain">
+    <meta name="author" content="CryptoMind">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://cryptomind-ton.zeabur.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cryptomind-ton.zeabur.app/">
+    <meta property="og:title" content="CryptoMind - AI Crypto Analyst">
+    <meta property="og:description" content="AI-driven cryptocurrency analysis platform providing real-time market analysis and intelligent trading recommendations">
+    <meta property="og:image" content="https://cryptomind-ton.zeabur.app/static/img/title_icon.png">
+    <meta property="og:locale" content="zh_TW">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://cryptomind-ton.zeabur.app/">
+    <meta name="twitter:title" content="CryptoMind - AI Crypto Analyst">
+    <meta name="twitter:description" content="AI-driven cryptocurrency analysis platform providing real-time market analysis and intelligent trading recommendations">
+    <meta name="twitter:image" content="https://cryptomind-ton.zeabur.app/static/img/title_icon.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/img/title_icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/img/icon-512.png">
+
+    <!-- PWA: web app manifest + iOS apple-touch-icon -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+
+    <!-- PWA: service worker 註冊（只快取 app shell，API/WebSocket 一律 network-only） -->
+    <script defer src="/static/sw-register.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS (pre-built, includes custom theme) -->
+    <link rel="stylesheet" href="/static/css/tailwind-built.css?v=16">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/styles.css?v=16">
+
+    <!-- CDN Libraries (defer = 並行下載，DOM 解析完成後依序執行，不阻塞渲染) -->
+    <script defer src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" crossorigin="anonymous" integrity="sha384-orgVf2eX2+m1zKAOIi09hD0W6GtVhoOUmqDK+sysYB2JTZ4vS86j4jm+X7a4Nnei"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/i18next.min.js" crossorigin="anonymous" integrity="sha384-OCCT+KZFt2FsqTxlTd8CUSq86zW/ZKmV0oe7qj36oye2CDbbVuxIXTY20t/u9LJt"></script>
+    <!-- markdown-it: chat message and history rendering (app.js initializes window.md) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js" crossorigin="anonymous" integrity="sha384-wLhprpjsmjc/XYIcF+LpMxd8yS1gss6jhevOp6F6zhiIoFK6AmHtm4bGKtehTani"></script>
+
+    <!-- Charting libs（全域 LightweightCharts / Chart）：交易對 K 線圖、歷史走勢圖、admin 統計圖。
+         cbf802f 曾誤刪這幾個 CDN → 點交易對時 LightweightCharts is not defined → 被 catch 成「連接錯誤，請檢查您的連線」+ 圖表空白。 -->
+    <script defer src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js" crossorigin="anonymous" integrity="sha384-rcCMiCptH4kTlEbg0euOTUKWe72TESbrjElatnG+9BfbmUIV268UK/Pro5biJdGm"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js" crossorigin="anonymous" integrity="sha384-zPzbVRXfR492Sd5D+HydTYCxxgHAfgVO8KERbLlpeH5unsmbAEXrscGUUqLZG9BM"></script>
+
+    <!-- TON Connect (Web DApp wallet) + TonWeb (payment comment cells) -->
+    <!-- v3.0.0: TON Connect v3 協議（bridge 容錯改善 + 新功能） -->
+    <script defer src="https://unpkg.com/@tonconnect/ui@3.0.0/dist/tonconnect-ui.min.js" crossorigin="anonymous" integrity="sha384-KZJz/e4LItU3cVpBbZC7OpSw0USa3d7FGIfLGlXN/RXZAcIypYXvQ0Qb8I9J222K"></script>
+    <script defer src="https://unpkg.com/tonweb@0.0.66/dist/tonweb.js" crossorigin="anonymous" integrity="sha384-KZ9iM9JqTC8JCLaVPv/PkC5yCO2FJ4qykQ6jhXY565xW86rtPEZgqcLfEWMtqQmT"></script>
+    <script defer src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous" integrity="sha384-Htz1SE4Sl5aitpvFgr2j0sfsGUIuSXI6t8hEyrlQ93zflEF3a29bH2AvkUROUw7J"></script>
+
+    <!-- Telegram Mini App SDK (external). The app-side integration lives in
+         web/js/telegram-webapp.js, imported first by main.js so Vite bundles
+         it into the production build (a plain /js/ script tag 404s on deploy). -->
+    <script defer src="https://telegram.org/js/telegram-web-app.js"></script>
+
+</head>
+
+<body class="shell-body h-screen w-screen overflow-hidden flex bg-background text-textMain selection:bg-primary/30">
+    <!-- config.js 先於一切：APP_CONFIG.DEBUG_MODE 由 hostname 推導，
+         logger.js 依它決定要不要把 console.log 換成 noop（正式站靜音）。 -->
+    <script src="/static/config.js"></script>
+    <script src="/js/logger.js"></script>
+    <script src="/js/early-init.js"></script>
+    <script src="/js/click-delegator.js"></script>
+    <script src="/js/error-boundary.js"></script>
+    <script src="/js/offline-banner.js"></script>
+    <script src="/js/safety-banner.js"></script>
+    <!-- Skip to main content link for keyboard users -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-background focus:rounded-lg focus:font-bold" data-i18n="common.skipToContent">Skip to main content</a>
+    <!-- Sidebar (Chat History) -->
+    <aside id="chat-sidebar" role="complementary" aria-label="Chat history sidebar"
+        class="fixed inset-y-0 left-0 z-[60] w-64 bg-surface/95 backdrop-blur-xl border-r border-borderSubtle transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static md:relative md:w-72 md:flex-shrink-0 flex flex-col">
+        <div class="p-4 border-b border-borderSubtle flex items-center justify-between">
+            <button data-click="switchTab" data-click-arg="chat" class="flex items-center gap-2 text-secondary font-serif hover:opacity-80 transition">
+                <img src="/static/img/title_icon.png" alt="CryptoMind Logo" class="w-7 h-7 rounded-lg object-cover">
+                <span class="brand-mark text-lg tracking-tight">CryptoMind</span>
+            </button>
+            <button data-click="toggleSidebar" aria-label="Close sidebar" class="md:hidden p-2 hover:bg-surfaceHighlight rounded-full text-textMuted"><i
+                    data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <div class="p-4">
+            <button data-click="createNewChat"
+                class="w-full py-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl flex items-center justify-center gap-2 transition font-bold text-sm">
+                <i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="sidebar.newChat">New Chat</span>
+            </button>
+        </div>
+
+        <!-- 側欄雙分頁（DANNY 2026-08-23 回饋）：導覽與對話歷史不再上下硬擠，
+             改為「對話歷史 / 功能選單」兩個 tab 由使用者切換，各佔全高。
+             手機抽屜與桌機共用；手機貼底 tab bar 仍是主要導覽。 -->
+        <div class="px-4 pb-3" role="tablist" aria-label="Sidebar sections">
+            <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surfaceHighlight/60">
+                <button id="sidebar-tab-history" type="button" role="tab" aria-selected="true"
+                    aria-controls="chat-session-list"
+                    data-click="GlobalNav.setSidebarTab" data-click-arg="history"
+                    class="flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition bg-background text-secondary shadow-sm">
+                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                    <span data-i18n="sidebar.tabHistory">History</span>
+                </button>
+                <button id="sidebar-tab-menu" type="button" role="tab" aria-selected="false"
+                    aria-controls="sidebar-nav-section"
+                    data-click="GlobalNav.setSidebarTab" data-click-arg="menu"
+                    class="flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition text-textMuted hover:text-secondary">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                    <span data-i18n="sidebar.tabMenu">Menu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 功能選單 tab 內容（2026-08-20 設計 docs/plans/2026-08-20-sidebar-nav-design.md）：
+             由 sidebar tab 切換顯示，啟用時佔全高；「更多分頁」popover 錨定按鈕下方。
+             min-h-0 + overflow-y-auto——矮視窗時區塊可收縮內滾（flex min-height:auto 陷阱）。 -->
+        <div id="sidebar-nav-section" class="hidden flex-1 min-h-0 overflow-y-auto custom-scrollbar px-2 pb-3">
+            <div class="px-2 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-textMuted/50"
+                data-i18n="sidebar.navigation">Navigation</div>
+            <div id="sidebar-nav-items" class="flex flex-col gap-0.5"></div>
+            <!-- 更多分頁 popover：列全部未隱藏分頁，點擊切換啟用（MIN 3 / MAX 5 由 NavPreferences 把關）；
+                 maxHeight 由 toggleSidebarNavMore 依視窗動態夾限 -->
+            <div class="relative mt-0.5">
+                <button id="sidebar-nav-more" data-click="GlobalNav.toggleSidebarNavMore"
+                    class="w-full flex items-center gap-3 p-2.5 rounded-xl text-textMuted hover:text-secondary hover:bg-surfaceHighlight transition text-sm font-medium text-left">
+                    <i data-lucide="layout-grid" class="w-4 h-4 shrink-0"></i>
+                    <span data-i18n="sidebar.moreTabs">More tabs</span>
+                </button>
+                <div id="sidebar-nav-popover"
+                    class="hidden absolute left-0 right-0 top-full z-50 mt-1 bg-surface border border-borderLight rounded-2xl shadow-xl p-2 max-h-72 overflow-y-auto custom-scrollbar">
+                    <div id="sidebar-nav-popover-list" class="flex flex-col gap-0.5"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-2 space-y-1" id="chat-session-list">
+            <!-- Sessions injected via JS -->
+            <div class="text-center text-xs text-textMuted/40 py-4" data-i18n="sidebar.noHistory">No history</div>
+        </div>
+
+        <div class="p-4 border-t border-borderSubtle" style="padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));">
+            <!-- 用戶卡與語言/主題切換同一列（DANNY 2026-08-24 回饋：切換鈕獨立一排、
+                 兩側留白難看）——用戶卡 flex-1 帶點擊區，切換鈕右側收緊；
+                 手機隱藏切換鈕（沿用頂欄）。dropdown 往上開（styles.css footer 設計） -->
+            <div class="flex items-center gap-2">
+                <button data-click="switchTab" data-click-arg="settings"
+                    class="flex-1 min-w-0 flex items-center gap-3 p-3 hover:bg-surfaceHighlight rounded-xl text-textMuted hover:text-secondary transition text-sm">
+                    <div class="w-8 h-8 rounded-full bg-surfaceHighlight flex items-center justify-center text-xs font-bold overflow-hidden"
+                        id="sidebar-user-avatar">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                    </div>
+                    <div class="flex-1 text-left min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <div class="font-bold truncate" id="sidebar-user-name" data-i18n="auth.loginRequired">Login required</div>
+                            <div id="sidebar-premium-badge"
+                                class="hidden px-1.5 py-0.5 rounded text-[8px] font-black bg-primary text-background leading-none uppercase tracking-tighter">
+                                PRO</div>
+                        </div>
+                        <div class="text-[10px] opacity-60" data-i18n="sidebar.settings">Settings</div>
+                    </div>
+                </button>
+                <!-- 語言/主題切換：桌機側欄底部、與用戶卡同列；手機沿用頂欄 -->
+                <div class="hidden md:flex items-center gap-1.5 shrink-0 self-center">
+                    <div class="lang-switcher-container shrink-0"></div>
+                    <div class="theme-switcher-container shrink-0"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Click outside sidebar to close -->
+    <div id="sidebar-backdrop" class="fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm hidden md:hidden"
+        data-click="toggleSidebar"></div>
+
+    <!-- Main Content Container -->
+    <main id="main-content" role="main" aria-label="Main content" class="flex-1 relative h-full flex flex-col w-full overflow-hidden">
+
+        <!-- Mobile Header -->
+        <header
+            class="md:hidden flex items-center justify-between px-4 py-3 border-b border-borderSubtle bg-background/80 backdrop-blur-sm z-40">
+            <button data-click="toggleSidebar" class="p-2 -ml-2 hover:bg-surfaceHighlight rounded-full text-textMuted"><i
+                    data-lucide="menu" class="w-5 h-5"></i></button>
+            <span class="font-serif text-secondary">CryptoMind</span>
+            <!-- 手機的語言/主題切換掛頂欄：底欄 switcher 在手機被 CSS 隱藏（避免擠壓分頁） -->
+            <div class="flex items-center gap-1.5">
+                <div class="header-lang-switcher shrink-0"></div>
+                <div class="header-theme-switcher shrink-0"></div>
+                <div id="notification-bell-mobile" class="flex items-center"></div>
+            </div>
+        </header>
+
+        <!-- Desktop Notification Bell (fixed top-right, visible on all pages) -->
+        <div id="notification-bell-desktop" class="hidden md:block fixed top-4 right-4 z-50"></div>
+
+        <div class="flex-1 relative w-full h-full overflow-hidden">
+
+            <!-- Global Navigation (mobile: 貼底 tab bar / desktop: 置中浮動 pill＋真拖動。
+                 2026-08-20 DANNY 回饋：維持底部浮動（頂部 dock 撤回），桌機把手可實際
+                 拖曳、位置記於 localStorage；非 chat 分頁以 --shell-content-clearance 讓位。) -->
+            <div id="global-nav-container" data-shell-fixed-nav
+                class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 md:hidden">
+                <nav id="draggable-nav" role="navigation" aria-label="Main navigation"
+                    class="bg-surface border border-borderLight rounded-2xl p-1.5 flex items-center gap-1 select-none transition-all duration-300 max-w-[calc(100vw-1.5rem)]">
+                    <!-- Collapse/Expand Toggle (desktop only;手機 tab bar 不折疊) -->
+                    <button id="nav-toggle" data-click="toggleNav" aria-label="Collapse/Expand navigation" aria-expanded="true"
+                        class="hidden md:flex w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted hover:text-primary transition-all duration-200"
+                        title="Collapse/Expand">
+                        <i data-lucide="chevrons-left" class="w-4 h-4 transition-transform duration-300"
+                            id="nav-toggle-icon"></i>
+                    </button>
+
+                    <!-- Navigation Buttons (Scrollable) - Dynamically Rendered -->
+                    <div id="nav-buttons-wrapper" class="min-w-0 flex-1">
+                        <div id="nav-buttons"
+                            class="flex items-center gap-1 overflow-x-auto transition-all duration-300 px-1 pb-1 shell-sidebar-scroll">
+
+                            <!-- Navigation buttons will be dynamically rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- 語言/主題切換：手機頂欄已有同款，pill 內不再重複
+                         （騰出寬度給 5 顆導覽按鈕，DANNY 2026-08-22） -->
+                    <div class="lang-switcher-container shrink-0 hidden"></div>
+                    <div class="theme-switcher-container shrink-0 hidden"></div>
+                    <!-- 拖曳把手已移除（2026-08-20 Phase 1b）：桌機導覽已併入 sidebar，
+                         此 pill 僅手機顯示，把手（hidden md:flex）無任何裝置可見 -->
+                </nav>
+            </div>
+
+            <!-- Tab: Chat (Home) -->
+            <div id="chat-tab" class="tab-content h-full flex flex-col relative">
+                <!-- Messages Area -->
+                <!-- 地址健診入口（design 2026-08-18）：訪客也可見；放訊息容器外（chat-history 會重寫容器內容） -->
+                <div id="safety-chat-banner" class="shell-safe-area-x pt-4">
+                    <div class="mx-auto max-w-2xl rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-danger shrink-0"></i>
+                            <span class="text-sm text-secondary truncate" data-i18n="safety.chatBanner.title">轉帳前，先查一下地址</span>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <a href="/scam-tracker/" class="text-sm font-medium text-danger whitespace-nowrap hover:underline" data-i18n="safety.chatBanner.cta">免費健診 →</a>
+                            <button type="button" data-safety-banner-close data-click="dismissSafetyBanner"
+                                class="p-1 rounded-md text-danger/60 hover:text-danger hover:bg-danger/10 transition shrink-0"
+                                data-i18n="safety.chatBanner.dismiss" data-i18n-attr="aria-label" aria-label="關閉">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="chat-messages" data-shell-scroll data-shell-scroll-extra="1rem"
+                    class="shell-safe-area-x flex-1 overflow-y-auto custom-scrollbar py-6"
+                    aria-live="polite" aria-atomic="false">
+                    <span id="greeting-time" class="hidden"></span>
+                </div>
+
+                <!-- Warning Overlay (No Key) -- changed to bottom hint bar, does not block content -->
+                <div id="no-llm-key-warning" data-shell-bottom-layer
+                    class="hidden absolute bottom-0 left-0 right-0 z-30 px-4 pb-2">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="flex items-center gap-3 bg-surface/90 backdrop-blur-md border border-amber-600/20 rounded-2xl px-4 py-3 shadow-lg">
+                            <i data-lucide="key" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+                            <p class="text-xs text-textMuted flex-1" data-i18n="chat.unlockDesc">Connect an API key to enable AI analysis.</p>
+                            <button data-click="switchTab" data-click-arg="settings"
+                                class="flex-shrink-0 px-3 py-1.5 bg-primary/15 hover:bg-primary/25 border border-primary/30 text-primary text-xs font-semibold rounded-xl transition whitespace-nowrap">
+                                <span data-i18n="chat.configureApiKey">Set API Key</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div data-shell-fixed-input
+                    class="shell-fade-bottom sticky bottom-0 z-40 px-3 md:px-6 flex-shrink-0">
+                    <div class="relative w-full">
+                        <!-- Options panel (hidden by default) -->
+                        <div id="analysis-options-panel"
+                            class="shell-scroll-cap hidden absolute bottom-full left-0 right-0 mb-2 bg-surface rounded-2xl border border-borderSubtle shadow-xl animate-fade-in-up z-10">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between px-4 pt-3 pb-2 border-b border-borderSubtle">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="settings" class="w-3.5 h-3.5 text-primary"></i>
+                                    <span class="text-xs font-bold text-secondary" data-i18n="settings.analysisSettings">Analysis Settings</span>
+                                </div>
+                                <button data-click="toggleOptions" class="text-textMuted hover:text-secondary transition">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <!-- System Prompt Section -->
+                            <div class="px-4 pt-3 pb-3">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label for="system-prompt-input" class="text-xs font-bold text-textMuted uppercase tracking-wider">System Prompt</label>
+                                    <div class="flex items-center gap-2">
+                                        <span id="system-prompt-saved" class="hidden text-[10px] text-green-400 font-medium" data-i18n="settings.saved">Saved</span>
+                                        <span id="system-prompt-save-error" class="hidden text-[10px] text-red-400 font-medium" data-i18n="settings.saveFailed">Save failed</span>
+                                        <span id="system-prompt-counter" class="text-[10px] text-textMuted font-mono">0/2000</span>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <textarea id="system-prompt-input"
+                                        class="w-full h-24 bg-background/50 border border-borderSubtle rounded-xl px-3 py-2 text-xs text-secondary placeholder-textMuted/40 resize-none focus:outline-none focus:border-primary/40 transition"
+                                        placeholder="Custom AI analysis prompt (leave empty to use default, auto-saves)..."
+                                        data-i18n="chat.systemPromptPlaceholder" data-i18n-attr="placeholder"
+                                        maxlength="2000"
+                                        data-input-action="systemPrompt"
+                                        data-blur-action="systemPromptBlur"></textarea>
+                                    <div id="system-prompt-premium-lock"
+                                        class="hidden absolute inset-0 bg-background/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                        <div class="text-center">
+                                            <i data-lucide="lock" class="w-5 h-5 text-yellow-400/60 mx-auto mb-1"></i>
+                                            <p class="text-[10px] text-textMuted" data-i18n="settings.upgradePremiumHint">Upgrade to Premium to customize System Prompt</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-textMuted/60 mt-1.5 flex items-center gap-1">
+                                    <i data-lucide="info" class="w-3 h-3"></i>
+                                    <span data-i18n="settings.toolEnableHint">Enable/disable tools in Settings → Tool Settings</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Guest banner（訪客模式引導：JS 依登入狀態顯示） -->
+                        <div id="guest-banner" class="hidden px-4 py-2.5 mb-1 mx-4 rounded-xl bg-primary/8 border border-primary/20 flex items-center gap-3 flex-wrap">
+                            <i data-lucide="zap" class="w-4 h-4 text-primary flex-shrink-0"></i>
+                            <p class="flex-1 min-w-[12rem] text-xs text-textMuted leading-relaxed">
+                                <span data-i18n="guest.bannerText">Guest mode: a few free AI questions every day</span>
+                            </p>
+                            <!-- 訪客唯一 tab 是 chat、無底部導覽 → banner 直接給公開功能入口 -->
+                            <a href="/scam-tracker/" class="flex-shrink-0 text-xs text-primary/80 hover:text-primary underline underline-offset-2 transition"
+                                data-i18n="guest.linkScam">Scam Checker</a>
+                            <a href="/static/forum/index.html" class="flex-shrink-0 text-xs text-primary/80 hover:text-primary underline underline-offset-2 transition"
+                                data-i18n="guest.linkForum">Forum</a>
+                            <button type="button" id="guest-connect-btn"
+                                class="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition"
+                                data-i18n="guest.connect">Connect Wallet</button>
+                        </div>
+
+                        <!-- Main input row — unified pill -->
+                        <div class="chat-input-row pb-4 pt-2">
+                            <div class="chat-input-shell flex items-center gap-1 bg-surface border border-borderSubtle rounded-2xl px-2 focus-within:border-primary/40 transition-all">
+                                <button data-click="toggleOptions" aria-label="Options"
+                                    class="chat-input-toggle w-9 h-9 rounded-xl flex items-center justify-center text-textMuted/40 hover:text-primary transition flex-shrink-0">
+                                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <label for="user-input" class="sr-only">Chat input</label>
+                                <input type="text" id="user-input" disabled aria-label="Chat input"
+                                    class="flex-1 min-w-0 w-full bg-transparent border-none outline-none text-[14px] text-secondary placeholder-textMuted/30 font-normal py-3.5 opacity-50 cursor-not-allowed"
+                                    placeholder="Send command to AI Agent..."
+                                    autocomplete="off">
+                                <div class="relative flex-shrink-0">
+                                    <button type="button" id="chat-preset-pill" aria-label="Agent preset"
+                                        class="h-8 px-2.5 rounded-xl bg-surfaceHighlight/60 hover:bg-surfaceHighlight text-[11px] text-textMuted hover:text-secondary transition max-w-36 truncate flex items-center gap-1 my-1.5">
+                                        <i data-lucide="users-round" class="w-3 h-3 flex-shrink-0"></i>
+                                        <span class="truncate">官方預設</span>
+                                    </button>
+                                    <div id="chat-preset-menu" class="hidden absolute bottom-11 right-0 z-50 w-64 max-h-64 overflow-y-auto custom-scrollbar p-2 rounded-xl bg-surface border border-borderSubtle/10 shadow-xl space-y-0.5"></div>
+                                </div>
+                                <button data-click="sendMessage" id="send-btn" disabled aria-label="Send"
+                                    class="chat-send-btn w-8 h-8 rounded-xl bg-primary text-background flex items-center justify-center hover:brightness-110 active:scale-95 transition opacity-40 cursor-not-allowed flex-shrink-0 my-1.5 mr-0.5">
+                                    <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Crypto -->
+            <div id="crypto-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: TW Stock -->
+            <div id="twstock-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: US Stock -->
+            <div id="usstock-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Journal（統一帳本 — 投資＋支出＋收入 Dashboard） -->
+            <div id="journal-tab" class="tab-content hidden h-full overflow-y-auto custom-scrollbar px-4 md:pl-6 md:pr-16 py-6 pb-40">
+                <div class="max-w-4xl mx-auto space-y-5">
+                    <!-- Header -->
+                    <div class="flex justify-between items-end md:pr-14">
+                        <div>
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="journal.title">Investment Journal</h2>
+                            <p class="text-sm text-textMuted mt-1" data-i18n="journal.subtitle">Trades, expenses & income in one ledger</p>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <!-- 報表基準幣（c039）：換算額/彙總以此幣別呈現。
+                                 切換會整批搬移既有條目的換算值，故先確認 -->
+                            <select id="journal-base-currency"
+                                class="text-xs bg-surface border border-borderSubtle rounded-xl px-2 py-2 pr-8 text-textMuted"
+                                data-i18n="journal.baseCurrencyLabel" data-i18n-attr="aria-label"
+                                aria-label="Reporting currency"></select>
+                            <button id="journal-refresh-btn" data-click="Journal.refresh"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition"
+                                data-i18n="journal.refresh" data-i18n-attr="aria-label" aria-label="Refresh">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </button>
+                            <button id="journal-add-btn" data-click="Journal.openForm"
+                                class="inline-flex items-center gap-2 whitespace-nowrap text-sm font-medium px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span data-i18n="journal.addEntry">Add Entry</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 子視圖切換（UX 第二輪）：月度收支 | 投資持倉 -->
+                    <div class="flex gap-1 p-1 bg-surfaceHighlight/60 rounded-xl w-fit">
+                        <button class="journal-view-btn px-4 py-1.5 text-sm font-medium rounded-lg transition"
+                            data-click="Journal.switchView" data-click-arg="cashflow">
+                            <span data-i18n="journal.viewCashflow">Cash Flow</span>
+                        </button>
+                        <button class="journal-view-btn px-4 py-1.5 text-sm font-medium rounded-lg transition"
+                            data-click="Journal.switchView" data-click-arg="invest">
+                            <span data-i18n="journal.viewInvest">Investments</span>
+                        </button>
+                    </div>
+
+                    <!-- ── 月度收支視圖 ─────────────────────────── -->
+                    <div id="journal-cashflow-view" class="space-y-5">
+                    <!-- Filter Bar -->
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <select id="journal-filter-type" class="journal-filter min-w-0 max-w-[45vw] text-sm bg-surface border border-borderSubtle rounded-xl px-3 py-2 pr-8 text-textMuted truncate">
+                            <option value="" data-i18n="journal.allTypes">All Types</option>
+                            <option value="expense" data-i18n="journal.filterExpense">Expenses</option>
+                            <option value="income" data-i18n="journal.filterIncome">Income</option>
+                        </select>
+                        <select id="journal-filter-days" class="journal-filter min-w-0 max-w-[45vw] text-sm bg-surface border border-borderSubtle rounded-xl px-3 py-2 pr-8 text-textMuted truncate">
+                            <option value="month" data-i18n="journal.thisMonth">This month</option>
+                            <option value="prev_month" data-i18n="journal.lastMonth">Last month</option>
+                            <option value="year" data-i18n="journal.thisYear">This year</option>
+                            <option value="7" data-i18n="journal.last7">Last 7 days</option>
+                            <option value="30" selected data-i18n="journal.last30">Last 30 days</option>
+                            <option value="90" data-i18n="journal.last90">Last 90 days</option>
+                            <option value="0" data-i18n="journal.allTime">All time</option>
+                        </select>
+                        <!-- 特定月份（native picker，手機彈月曆）——帳本回顧以絕對月份為一等公民 -->
+                        <input id="journal-filter-month" type="month"
+                            data-i18n="journal.pickMonth" data-i18n-attr="aria-label" aria-label="Pick month"
+                            class="journal-filter min-w-0 text-sm bg-surface border border-borderSubtle rounded-xl px-3 py-2 text-textMuted">
+                        <div class="flex-1 min-w-[160px] relative">
+                            <input id="journal-search" type="text"
+                                class="journal-filter w-full text-sm bg-surface border border-borderSubtle rounded-xl px-3 py-2 pl-9 text-secondary placeholder-textMuted/40"
+                                data-i18n="journal.searchPlaceholder" data-i18n-attr="placeholder" placeholder="Search notes or symbols...">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-textMuted/40"></i>
+                        </div>
+                        <!-- title/aria 由 _syncTrashToggle 依語言與開合狀態設定（init 呼叫）-->
+                        <button id="journal-trash-toggle" data-click="Journal.toggleTrash"
+                            class="p-2 bg-surface border border-borderSubtle rounded-xl text-textMuted hover:text-danger transition shrink-0"
+                            title="Show trash" aria-label="Show trash">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Category Chips -->
+                    <div id="journal-category-chips" class="flex flex-wrap gap-1.5"></div>
+
+                    <!-- Summary Cards -->
+                    <div id="journal-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+
+                    <!-- Category Breakdown -->
+                    <div id="journal-category-breakdown" class="space-y-2"></div>
+
+                    <!-- Entry List -->
+                    <div id="journal-list" class="space-y-2">
+                        <div class="text-center text-textMuted py-8" data-i18n="journal.loading">Loading...</div>
+                    </div>
+                    </div><!-- /journal-cashflow-view -->
+
+                    <!-- ── 投資持倉視圖（UX 第二輪）──────────────── -->
+                    <div id="journal-invest-view" class="hidden space-y-5">
+                        <div id="journal-invest-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                        <div id="journal-positions-list" class="space-y-2"></div>
+                        <div>
+                            <h3 class="text-sm font-medium text-textMuted mb-2" data-i18n="journal.investTrades">Investment Trades</h3>
+                            <div id="journal-invest-list" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Entry Modal（max-h + 內滾：矮視窗表單不超出） -->
+            <div id="journal-form-modal" class="hidden fixed inset-0 z-[80] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                <div class="bg-surface w-full max-w-md max-h-[85dvh] flex flex-col rounded-2xl border border-borderLight overflow-hidden">
+                    <div class="flex justify-between items-center p-6 pb-0 shrink-0">
+                        <h3 class="font-serif text-xl text-secondary" data-i18n="journal.addEntry">Add Entry</h3>
+                        <button data-click="Journal.closeForm" class="p-2 hover:bg-surfaceHighlight rounded-full text-textMuted">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-4 min-h-0 overflow-y-auto custom-scrollbar">
+                        <select id="journal-entry-type" class="w-full text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary">
+                            <option value="expense" data-i18n="journal.typeExpense">💸 Expense</option>
+                            <option value="income" data-i18n="journal.typeIncome">💰 Income</option>
+                            <option value="trade" data-i18n="journal.typeTrade">📈 Trade</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input id="journal-entry-amount" type="number" step="any" min="0.00000001" placeholder="0.00"
+                                class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                                data-i18n="journal.amountPlaceholder" data-i18n-attr="placeholder" required>
+                            <select id="journal-entry-currency" class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary">
+                                <!-- 法幣（exchange_rate.py _FIAT_RATES：離線靜態表，一定換算得出）-->
+                                <option value="TWD">TWD</option>
+                                <option value="USD">USD</option>
+                                <option value="HKD">HKD</option>
+                                <option value="JPY">JPY</option>
+                                <option value="CNY">CNY</option>
+                                <option value="EUR">EUR</option>
+                                <!-- 加密貨幣（exchange_rate.py _CRYPTO_SYMBOLS：走 CoinGecko）-->
+                                <option value="BTC">BTC</option>
+                                <option value="ETH">ETH</option>
+                                <option value="TON">TON</option>
+                                <option value="USDT">USDT</option>
+                                <option value="USDC">USDC</option>
+                                <option value="SOL">SOL</option>
+                                <option value="BNB">BNB</option>
+                                <option value="XRP">XRP</option>
+                                <option value="DOGE">DOGE</option>
+                                <option value="ADA">ADA</option>
+                                <option value="AVAX">AVAX</option>
+                                <option value="MATIC">MATIC</option>
+                                <option value="DOT">DOT</option>
+                                <option value="LINK">LINK</option>
+                            </select>
+                        </div>
+                        <!-- 自填匯率（幣別≠基準幣時顯示；留空＝自動抓取）——
+                             匯率服務抓不到時的出口，也供填自己的實際成交匯率 -->
+                        <div id="journal-entry-rate-row" class="hidden">
+                            <input id="journal-entry-rate" type="number" step="any" min="0.00000001"
+                                class="w-full text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                                data-i18n="journal.ratePlaceholder" data-i18n-attr="placeholder"
+                                placeholder="Exchange rate (optional)">
+                            <p class="text-[10px] text-textMuted/60 mt-1" data-i18n="journal.rateHint">Leave empty = look up automatically</p>
+                        </div>
+                        <!-- 投資專用：股數＋買賣方向（型別切換時由 _populateCategories 開關）-->
+                        <div id="journal-entry-trade-fields" class="hidden">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input id="journal-entry-quantity" type="number" step="any" min="0.00000001" placeholder="1"
+                                    class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                                    data-i18n="journal.quantityPlaceholder" data-i18n-attr="placeholder">
+                                <select id="journal-entry-side" class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary">
+                                    <option value="buy" data-i18n="journal.sideBuy">Buy</option>
+                                    <option value="sell" data-i18n="journal.sideSell">Sell</option>
+                                </select>
+                            </div>
+                        </div>
+                        <select id="journal-entry-category" class="w-full text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary">
+                            <option value="" data-i18n="journal.autoCategory">Auto-categorize</option>
+                        </select>
+                        <input id="journal-entry-category-custom" type="text" maxlength="20"
+                            class="hidden text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                            data-i18n="journal.customCategoryPlaceholder" data-i18n-attr="placeholder" placeholder="Custom category (optional)">
+                        <input id="journal-entry-symbol" type="text" placeholder="BTC / 2330.TW / AAPL"
+                            class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                            data-i18n="journal.symbolPlaceholder" data-i18n-attr="placeholder">
+                        <!-- 日期：留空＝現在；補記歷史交易用 -->
+                        <div>
+                            <input id="journal-entry-date" type="datetime-local"
+                                class="w-full text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary">
+                            <p class="text-[10px] text-textMuted/60 mt-1" data-i18n="journal.dateHint">Leave empty = now</p>
+                        </div>
+                        <input id="journal-entry-note" type="text" placeholder="Note (e.g. lunch with team)"
+                            class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                            data-i18n="journal.notePlaceholder" data-i18n-attr="placeholder">
+                    </div>
+                    <div class="flex gap-3 p-6 shrink-0 border-t border-borderSubtle/60">
+                        <button data-click="Journal.closeForm"
+                            class="flex-1 py-2.5 text-sm font-medium rounded-xl bg-surfaceHighlight text-textMuted hover:bg-borderSubtle transition"
+                            data-i18n="common.cancel">Cancel</button>
+                        <button data-click="Journal.submitForm"
+                            class="flex-1 py-2.5 text-sm font-bold rounded-xl bg-primary text-background hover:bg-primary/90 transition"
+                            data-i18n="journal.save">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Journal Entry History Modal（c037 版本史）-->
+            <div id="journal-history-modal" class="hidden fixed inset-0 z-[80] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                <div class="bg-surface w-full max-w-md max-h-[85dvh] flex flex-col rounded-2xl border border-borderLight overflow-hidden">
+                    <div class="flex justify-between items-center p-6 pb-0 shrink-0">
+                        <h3 class="font-serif text-xl text-secondary" data-i18n="journal.historyTitle">Entry History</h3>
+                        <button data-click="Journal.closeHistory" class="p-2 hover:bg-surfaceHighlight rounded-full text-textMuted">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div id="journal-history-list" class="p-6 space-y-3 min-h-0 overflow-y-auto custom-scrollbar"></div>
+                </div>
+            </div>
+
+            <!-- Journal Edit Entry Modal（2026-08-26：後端 PUT 一直存在，補 UI 入口）-->
+            <div id="journal-edit-modal" class="hidden fixed inset-0 z-[80] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                <div class="bg-surface w-full max-w-md max-h-[85dvh] flex flex-col rounded-2xl border border-borderLight overflow-hidden">
+                    <div class="flex justify-between items-center p-6 pb-0 shrink-0">
+                        <h3 class="font-serif text-xl text-secondary" data-i18n="journal.editTitle">Edit Entry</h3>
+                        <button data-click="Journal.closeEditForm" class="p-2 hover:bg-surfaceHighlight rounded-full text-textMuted">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-4 min-h-0 overflow-y-auto custom-scrollbar">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input id="journal-edit-amount" type="number" step="any" min="0.00000001" placeholder="0.00"
+                                class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                                data-i18n="journal.amountPlaceholder" data-i18n-attr="placeholder">
+                            <select id="journal-edit-currency" class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary">
+                                <!-- 法幣（exchange_rate.py _FIAT_RATES：離線靜態表，一定換算得出）-->
+                                <option value="TWD">TWD</option>
+                                <option value="USD">USD</option>
+                                <option value="HKD">HKD</option>
+                                <option value="JPY">JPY</option>
+                                <option value="CNY">CNY</option>
+                                <option value="EUR">EUR</option>
+                                <!-- 加密貨幣（exchange_rate.py _CRYPTO_SYMBOLS：走 CoinGecko）-->
+                                <option value="BTC">BTC</option>
+                                <option value="ETH">ETH</option>
+                                <option value="TON">TON</option>
+                                <option value="USDT">USDT</option>
+                                <option value="USDC">USDC</option>
+                                <option value="SOL">SOL</option>
+                                <option value="BNB">BNB</option>
+                                <option value="XRP">XRP</option>
+                                <option value="DOGE">DOGE</option>
+                                <option value="ADA">ADA</option>
+                                <option value="AVAX">AVAX</option>
+                                <option value="MATIC">MATIC</option>
+                                <option value="DOT">DOT</option>
+                                <option value="LINK">LINK</option>
+                            </select>
+                        </div>
+                        <div id="journal-edit-rate-row" class="hidden">
+                            <input id="journal-edit-rate" type="number" step="any" min="0.00000001"
+                                class="w-full text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                                data-i18n="journal.ratePlaceholder" data-i18n-attr="placeholder"
+                                placeholder="Exchange rate (optional)">
+                            <p class="text-[10px] text-textMuted/60 mt-1" data-i18n="journal.rateHintEdit">Leave empty = keep the frozen rate</p>
+                        </div>
+                        <select id="journal-edit-category" class="w-full text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"></select>
+                        <input id="journal-edit-note" type="text" placeholder="Note"
+                            class="text-sm bg-surfaceHighlight border border-borderSubtle rounded-xl px-3 py-2.5 text-secondary"
+                            data-i18n="journal.notePlaceholder" data-i18n-attr="placeholder">
+                    </div>
+                    <div class="flex gap-3 p-6 shrink-0 border-t border-borderSubtle/60">
+                        <button data-click="Journal.closeEditForm"
+                            class="flex-1 py-2.5 text-sm font-medium rounded-xl bg-surfaceHighlight text-textMuted hover:bg-borderSubtle transition"
+                            data-i18n="common.cancel">Cancel</button>
+                        <button data-click="Journal.submitEditForm"
+                            class="flex-1 py-2.5 text-sm font-bold rounded-xl bg-primary text-background hover:bg-primary/90 transition"
+                            data-i18n="journal.save">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Wallet -->
+            <div id="wallet-tab"
+                class="tab-content hidden h-full overflow-y-auto custom-scrollbar px-4 md:pl-6 md:pr-16 py-6 pb-40">
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <!-- Header -->
+                    <div class="flex justify-between items-end md:pr-14">
+                        <h2 class="font-serif text-3xl text-secondary" data-i18n="wallet.title">Wallet History</h2>
+                        <button data-click="walletLoad"
+                            class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition"><i
+                                data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                    </div>
+
+                    <!-- Balance / Status Card -->
+                    <div class="bg-surface border border-borderSubtle rounded-[2rem] p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none">
+                            <i data-lucide="wallet" class="w-32 h-32 text-primary"></i>
+                        </div>
+                        <div class="flex items-center gap-5 relative z-10">
+                            <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-8 h-8">
+                                    <path d="M12 2L21 12L12 22L3 12L12 2Z" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-textMuted text-xs font-bold uppercase tracking-wider mb-2"
+                                    data-i18n="wallet.totalActivity">Total
+                                    Activity</div>
+                                <div class="flex gap-8">
+                                    <div>
+                                        <span class="text-[10px] text-textMuted uppercase tracking-wider block mb-0.5"
+                                            data-i18n="wallet.spentOut">Spent
+                                            (Out)</span>
+                                        <div class="text-danger font-bold text-xl flex items-center gap-1">
+                                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                                            <span id="wallet-total-out">0.0</span> TON
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-textMuted uppercase tracking-wider block mb-0.5"
+                                            data-i18n="wallet.receivedIn">Received
+                                            (In)</span>
+                                        <div class="text-success font-bold text-xl flex items-center gap-1">
+                                            <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                                            <span id="wallet-total-in">0.0</span> TON
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction List -->
+                    <div class="bg-surface border border-borderSubtle rounded-[2rem] p-6 min-h-[400px]">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <h3 class="font-bold text-secondary text-lg flex items-center gap-2">
+                                <i data-lucide="history" class="w-5 h-5 text-primary"></i> <span
+                                    data-i18n="wallet.transactions">Transactions</span>
+                            </h3>
+
+                            <!-- Filters -->
+                            <div class="flex flex-col gap-2 items-end">
+                                <div class="flex gap-2 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+                                    <select id="wallet-filter-type" data-change-action="walletApplyFilters"
+                                        class="bg-surfaceHighlight border border-borderLight text-textMuted text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-primary/50 transition cursor-pointer">
+                                        <option value="all" data-i18n="wallet.allTypes">All Types</option>
+                                        <option value="in" data-i18n="wallet.income">💰 Income (In)</option>
+                                        <option value="out" data-i18n="wallet.expense">💸 Expense (Out)</option>
+                                        <option value="membership" data-i18n="wallet.premium">👑 Premium</option>
+                                        <option value="tip" data-i18n="wallet.tips">🎁 Tips</option>
+                                        <option value="post" data-i18n="wallet.postFees">📝 Post Fees</option>
+                                    </select>
+                                    <select id="wallet-filter-time" data-change-action="walletTimeFilter"
+                                        class="bg-surfaceHighlight border border-borderLight text-textMuted text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-primary/50 transition cursor-pointer">
+                                        <option value="all" data-i18n="wallet.allTime">All Time</option>
+                                        <option value="7" data-i18n="wallet.last7Days">Last 7 Days</option>
+                                        <option value="30" data-i18n="wallet.last30Days">Last 30 Days</option>
+                                        <option value="90" data-i18n="wallet.last3Months">Last 3 Months</option>
+                                        <option value="custom" data-i18n="wallet.customRange">📅 Custom Range</option>
+                                    </select>
+                                </div>
+
+                                <!-- Custom Date Inputs (Hidden by default) -->
+                                <div id="wallet-custom-date-range"
+                                    class="hidden flex items-center gap-2 bg-surfaceHighlight p-2 rounded-xl border border-borderSubtle animate-fade-in-down w-full md:w-auto justify-end">
+                                    <input type="date" id="wallet-date-start"
+                                        class="bg-background border border-borderLight rounded-lg px-2 py-1 text-xs text-secondary outline-none focus:border-primary/50 min-w-[120px]"
+                                        data-change-action="walletApplyFilters">
+                                    <span class="text-textMuted text-xs" data-i18n="common.to">to</span>
+                                    <input type="date" id="wallet-date-end"
+                                        class="bg-background border border-borderLight rounded-lg px-2 py-1 text-xs text-secondary outline-none focus:border-primary/50 min-w-[120px]"
+                                        data-change-action="walletApplyFilters">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="wallet-tx-list" class="space-y-2">
+                            <div class="text-center text-textMuted py-10 opacity-50" data-i18n="wallet.loadingHistory">
+                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+                                Loading history...
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab: Trust（全面重組 Phase 1，動態注入） -->
+            <div id="trust-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: AI Studio（Phase 1/2，動態注入；入口 = Settings「我的 AI」） -->
+            <div id="ai-studio-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Discover（Phase 3 People & Projects 探索，動態注入） -->
+            <div id="discover-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Studio（提案工作台＝募資者模式，design 2026-08-16，動態注入） -->
+            <div id="studio-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Wallet Monitor（全面重組，動態注入） -->
+            <div id="wallet-monitor-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Commodity -->
+            <div id="commodity-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <!-- Header -->
+                    <div id="commodity-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.commodity">Commodities</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="commodity-last-updated" class="text-xs text-textMuted"></span>
+                                <button data-click="CommodityTab.showPicker" title="Custom selection"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="CommodityTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="commodity-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="commodity-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="commodity-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="commodity-list" class="space-y-3">
+                            <!-- Injected by commodity.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section (hidden by default) -->
+                    <div id="commodity-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="CommodityTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="market.commodityPulse">Commodity Pulse</h2>
+                        </div>
+                        <div id="commodity-pulse-content">
+                            <!-- Injected by commodity.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Forex -->
+            <div id="forex-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <!-- Header -->
+                    <div id="forex-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.forex">Forex</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="forex-last-updated" class="text-xs text-textMuted"></span>
+                                <button data-click="ForexTab.showPicker" title="Custom currency pair"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="ForexTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="forex-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="forex-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="forex-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="forex-list" class="space-y-3">
+                            <!-- Injected by forex.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section (hidden by default) -->
+                    <div id="forex-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="ForexTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="forex.pulse">Forex Pulse</h2>
+                        </div>
+                        <div id="forex-pulse-content">
+                            <!-- Injected by forex.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: HK Stock -->
+            <div id="hkstock-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <div id="hkstock-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.hkStock">HK Stocks</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="hkstock-last-updated" class="text-xs text-textMuted"></span>
+                                <div class="relative">
+                                    <input type="text" id="hkstock-add-input" placeholder="Code" maxlength="12"
+                                        data-i18n="stock.codePlaceholder" data-i18n-attr="placeholder"
+                                        data-uppercase
+                                        data-enter="HKStockTab.addStock"
+                                        class="w-24 bg-background/50 border border-borderLight rounded-lg pl-2 pr-7 py-1 text-xs focus:outline-none focus:border-primary transition-colors text-textMain placeholder-textMuted/50">
+                                    <button data-click="HKStockTab.addStock" data-click-input="hkstock-add-input"
+                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-textMuted hover:text-primary transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <button data-click="HKStockTab.showPicker" title="Custom selection"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="HKStockTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="hkstock-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="hkstock-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="hkstock-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="hkstock-list" class="space-y-3">
+                            <!-- Injected by hkstock.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section -->
+                    <div id="hkstock-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="HKStockTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="market.hkStockPulse">HK Stock Pulse</h2>
+                        </div>
+                        <div id="hkstock-pulse-content">
+                            <!-- Injected by hkstock.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: A Stock -->
+            <div id="astock-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <div id="astock-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.aStock">China Stocks</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="astock-last-updated" class="text-xs text-textMuted"></span>
+                                <div class="relative">
+                                    <input type="text" id="astock-add-input" placeholder="Code" maxlength="12"
+                                        data-i18n="stock.codePlaceholder" data-i18n-attr="placeholder"
+                                        data-uppercase
+                                        data-enter="AStockTab.addStock"
+                                        class="w-24 bg-background/50 border border-borderLight rounded-lg pl-2 pr-7 py-1 text-xs focus:outline-none focus:border-primary transition-colors text-textMain placeholder-textMuted/50">
+                                    <button data-click="AStockTab.addStock" data-click-input="astock-add-input"
+                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-textMuted hover:text-primary transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <button data-click="AStockTab.showPicker" title="Custom selection"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="AStockTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="astock-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="astock-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="astock-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="astock-list" class="space-y-3">
+                            <!-- Injected by astock.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section -->
+                    <div id="astock-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="AStockTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="market.aStockPulse">China Stock Pulse</h2>
+                        </div>
+                        <div id="astock-pulse-content">
+                            <!-- Injected by astock.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: JP Stock -->
+            <div id="jpstock-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <div id="jpstock-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.jpStock">Japan Stocks</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="jpstock-last-updated" class="text-xs text-textMuted"></span>
+                                <div class="relative">
+                                    <input type="text" id="jpstock-add-input" placeholder="Code" maxlength="12"
+                                        data-i18n="stock.codePlaceholder" data-i18n-attr="placeholder"
+                                        data-uppercase
+                                        data-enter="JPStockTab.addStock"
+                                        class="w-24 bg-background/50 border border-borderLight rounded-lg pl-2 pr-7 py-1 text-xs focus:outline-none focus:border-primary transition-colors text-textMain placeholder-textMuted/50">
+                                    <button data-click="JPStockTab.addStock" data-click-input="jpstock-add-input"
+                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-textMuted hover:text-primary transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <button data-click="JPStockTab.showPicker" title="Custom selection"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="JPStockTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="jpstock-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="jpstock-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="jpstock-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="jpstock-list" class="space-y-3">
+                            <!-- Injected by jpstock.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section -->
+                    <div id="jpstock-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="JPStockTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="market.jpStockPulse">Japan Stock Pulse</h2>
+                        </div>
+                        <div id="jpstock-pulse-content">
+                            <!-- Injected by jpstock.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: India Stock -->
+            <div id="instock-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <div id="instock-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.inStock">India Stocks</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="instock-last-updated" class="text-xs text-textMuted"></span>
+                                <div class="relative">
+                                    <input type="text" id="instock-add-input" placeholder="Code" maxlength="15"
+                                        data-i18n="stock.codePlaceholder" data-i18n-attr="placeholder"
+                                        data-uppercase
+                                        data-enter="INStockTab.addStock"
+                                        class="w-24 bg-background/50 border border-borderLight rounded-lg pl-2 pr-7 py-1 text-xs focus:outline-none focus:border-primary transition-colors text-textMain placeholder-textMuted/50">
+                                    <button data-click="INStockTab.addStock" data-click-input="instock-add-input"
+                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-textMuted hover:text-primary transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <button data-click="INStockTab.showPicker" title="Custom selection"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="INStockTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="instock-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="instock-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="instock-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="instock-list" class="space-y-3">
+                            <!-- Injected by instock.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section -->
+                    <div id="instock-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="INStockTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="market.inStockPulse">India Stock Pulse</h2>
+                        </div>
+                        <div id="instock-pulse-content">
+                            <!-- Injected by instock.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Korea Stock -->
+            <div id="krstock-tab"
+                class="tab-content hidden h-full overflow-hidden relative">
+                <div class="max-w-2xl mx-auto">
+                    <div id="krstock-market-section">
+                        <div class="flex justify-between items-end mb-6 md:pr-14">
+                            <h2 class="font-serif text-3xl text-secondary" data-i18n="nav.krStock">Korea Stocks</h2>
+                            <div class="flex items-center gap-2">
+                                <span id="krstock-last-updated" class="text-xs text-textMuted"></span>
+                                <div class="relative">
+                                    <input type="text" id="krstock-add-input" placeholder="Code" maxlength="12"
+                                        data-i18n="stock.codePlaceholder" data-i18n-attr="placeholder"
+                                        data-uppercase
+                                        data-enter="KRStockTab.addStock"
+                                        class="w-24 bg-background/50 border border-borderLight rounded-lg pl-2 pr-7 py-1 text-xs focus:outline-none focus:border-primary transition-colors text-textMain placeholder-textMuted/50">
+                                    <button data-click="KRStockTab.addStock" data-click-input="krstock-add-input"
+                                        class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-textMuted hover:text-primary transition-colors">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <button data-click="KRStockTab.showPicker" title="Custom selection"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                </button>
+                                <button data-click="KRStockTab.refreshMarketWatch"
+                                    class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+                            <span id="krstock-market-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surfaceHighlight text-textMuted border-borderLight font-bold">Checking schedule...</span>
+                            <span id="krstock-market-refresh-note" class="text-textMuted/80">Auto refresh policy loading</span>
+                            <span id="krstock-market-session-note" class="text-textMuted/60">Session info loading</span>
+                        </div>
+                        <div id="krstock-list" class="space-y-3">
+                            <!-- Injected by krstock.js -->
+                        </div>
+                    </div>
+                    <!-- Pulse Section -->
+                    <div id="krstock-pulse-section" class="hidden">
+                        <div class="flex items-center gap-3 mb-6 md:pr-14">
+                            <button data-click="KRStockTab.backToMarket"
+                                class="p-2 bg-surface hover:bg-surfaceHighlight rounded-full text-textMuted transition">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            </button>
+                            <h2 class="font-serif text-2xl text-secondary" data-i18n="market.krStockPulse">Korea Stock Pulse</h2>
+                        </div>
+                        <div id="krstock-pulse-content">
+                            <!-- Injected by krstock.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Friends (Global Social Hub) -->
+            <div id="friends-tab" class="tab-content hidden h-full overflow-hidden relative">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Forum -->
+            <div id="forum-tab"
+                class="tab-content hidden h-full overflow-y-auto custom-scrollbar px-4 md:pl-6 md:pr-16 py-6 pb-40">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+
+            <!-- Tab: Settings -->
+            <div id="settings-tab"
+                class="tab-content hidden h-full overflow-y-auto custom-scrollbar px-4 md:px-6 py-6 pb-40 will-change-transform">
+                <!-- Dynamic Content Injected via components.js -->
+            </div>
+            <div id="admin-tab"
+                class="tab-content hidden h-full overflow-y-auto custom-scrollbar px-4 md:px-6 py-6 pb-40 will-change-transform">
+                <!-- Dynamic Content Injected via components.js (admin only) -->
+            </div>
+    </main>
+
+    <!-- Chart Modal (Moved from Watchlist) -->
+    <div id="chart-section" class="hidden fixed inset-0 z-[60] bg-background/95 backdrop-blur overflow-y-auto p-4 md:p-6">
+        <div class="flex flex-col gap-3 mb-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <h3 id="chart-title" class="text-lg md:text-xl font-serif text-secondary">BTC Chart</h3>
+                    <span id="chart-updated" class="text-[10px] text-textMuted opacity-60"></span>
+                </div>
+                <button data-click="closeChart"
+                    class="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-textMuted hover:text-secondary transition"><i
+                        data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <!-- Toolbar -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Timeframe Selector -->
+                <div class="flex gap-0.5 bg-surface/50 p-1 rounded-xl overflow-x-auto">
+                    <button data-click="changeChartInterval" data-click-arg="1m"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1m">1m</button>
+                    <button data-click="changeChartInterval" data-click-arg="3m"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="3m">3m</button>
+                    <button data-click="changeChartInterval" data-click-arg="5m"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="5m">5m</button>
+                    <button data-click="changeChartInterval" data-click-arg="15m"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="15m">15m</button>
+                    <button data-click="changeChartInterval" data-click-arg="30m"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="30m">30m</button>
+                    <button data-click="changeChartInterval" data-click-arg="1h"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1h">1H</button>
+                    <button data-click="changeChartInterval" data-click-arg="2h"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="2h">2H</button>
+                    <button data-click="changeChartInterval" data-click-arg="4h"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="4h">4H</button>
+                    <button data-click="changeChartInterval" data-click-arg="1d"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap bg-surfaceHighlight text-primary"
+                        data-interval="1d">1D</button>
+                    <button data-click="changeChartInterval" data-click-arg="1w"
+                        class="chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1w">1W</button>
+                </div>
+                <!-- Auto Refresh Toggle -->
+                <button id="auto-refresh-btn" data-click="toggleAutoRefresh"
+                    class="px-2 py-1 text-[10px] rounded-lg bg-surface/50 text-textMuted hover:bg-surfaceHighlight transition flex items-center gap-1"
+                    title="Auto refresh" data-i18n="chart.autoRefresh" data-i18n-attr="title">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                    <span id="auto-refresh-status" data-i18n="chart.off">OFF</span>
+                </button>
+                <!-- OHLCV Info Display -->
+                <div id="ohlcv-info" class="flex flex-wrap items-center gap-2 text-[10px] font-mono ml-auto">
+                    <span class="text-textMuted">O:<span id="info-open" class="text-secondary ml-0.5">-</span></span>
+                    <span class="text-textMuted">H:<span id="info-high" class="text-success ml-0.5">-</span></span>
+                    <span class="text-textMuted">L:<span id="info-low" class="text-danger ml-0.5">-</span></span>
+                    <span class="text-textMuted">C:<span id="info-close" class="text-secondary ml-0.5">-</span></span>
+                    <span class="text-textMuted">Vol:<span id="info-volume" class="text-primary ml-0.5">-</span></span>
+                </div>
+            </div>
+        </div>
+        <!-- Chart Area -->
+        <div class="w-full bg-surface rounded-3xl border border-borderSubtle overflow-hidden">
+            <!-- Current Price Display -->
+            <div class="px-4 pt-3 pb-1">
+                <div id="current-price-display" class="text-center text-2xl font-bold text-secondary font-mono">
+                    <!-- Current price will be displayed here -->
+                </div>
+            </div>
+            <div id="chart-container" class="h-[52dvh] w-full relative"></div>
+            <div id="volume-container" class="w-full h-40 border-t border-borderSubtle"></div>
+        </div>
+    </div>
+
+    <!-- Content Modal（memory / skill 完整內容檢視 + 編輯）-->
+    <div id="content-modal"
+        class="hidden fixed inset-0 z-[60] bg-background/95 backdrop-blur overflow-y-auto p-4 md:p-6">
+        <div class="max-w-2xl mx-auto flex flex-col gap-3 min-h-full">
+            <!-- 標題列 -->
+            <div class="flex justify-between items-center gap-3">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <div id="content-modal-title" class="flex items-center gap-2"></div>
+                </div>
+                <button id="content-modal-close-btn"
+                    class="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-textMuted hover:text-secondary transition shrink-0">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <h3 id="content-modal-subtitle" class="text-lg font-serif text-secondary break-words"></h3>
+
+            <!-- 內容區 -->
+            <textarea id="content-modal-body"
+                class="flex-1 w-full bg-surface border border-borderLight rounded-xl px-4 py-3 text-sm text-secondary focus:outline-none focus:border-primary/40 resize-none min-h-[40dvh] font-mono"
+                readonly></textarea>
+
+            <!-- 操作列 -->
+            <div class="flex items-center justify-end gap-2">
+                <button id="content-modal-cancel-btn"
+                    class="hidden px-4 py-2 rounded-lg text-textMuted hover:text-secondary transition text-sm">Cancel</button>
+                <button id="content-modal-save-btn"
+                    class="hidden px-4 py-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition text-sm font-medium">Save</button>
+                <button id="content-modal-edit-btn"
+                    class="px-4 py-2 rounded-lg text-textMuted hover:text-primary hover:bg-surfaceHighlight transition text-sm flex items-center gap-1.5">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                </button>
+                <button id="content-modal-delete-btn"
+                    class="px-4 py-2 rounded-lg text-textMuted hover:text-red-400 hover:bg-red-400/10 transition text-sm flex items-center gap-1.5">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TW Stock Chart Modal -->
+    <div id="twstock-chart-section"
+        class="hidden fixed inset-0 z-[60] bg-background/95 backdrop-blur overflow-y-auto p-4 md:p-6">
+        <div class="flex flex-col gap-3 mb-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <h3 id="twstock-chart-title" class="text-lg md:text-xl font-serif text-secondary">TW Stock Chart
+                    </h3>
+                    <span id="twstock-chart-updated" class="text-[10px] text-textMuted opacity-60"></span>
+                </div>
+                <button data-click="twCloseChart"
+                    class="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-textMuted hover:text-secondary transition"><i
+                        data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <!-- Toolbar -->
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Timeframe Selector -->
+                <div class="flex gap-0.5 bg-surface/50 p-1 rounded-xl overflow-x-auto">
+                    <button data-click="twChangeChartInterval" data-click-arg="1d"
+                        class="tw-chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap bg-surfaceHighlight text-primary"
+                        data-interval="1d">1D</button>
+                    <button data-click="twChangeChartInterval" data-click-arg="1wk"
+                        class="tw-chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1wk">1W</button>
+                    <button data-click="twChangeChartInterval" data-click-arg="1mo"
+                        class="tw-chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1mo">1M</button>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-textMuted ml-4 px-2 py-1 bg-surface/30 rounded-lg">
+                    <i data-lucide="info" class="w-3 h-3"></i> <span data-i18n="chart.afterHoursDelay">After-hours delayed data (yfinance)</span>
+                </div>
+                <!-- OHLCV Info Display -->
+                <div id="tw-ohlcv-info" class="flex flex-wrap items-center gap-2 text-[10px] font-mono ml-auto">
+                    <span class="text-textMuted">O:<span id="tw-info-open" class="text-secondary ml-0.5">-</span></span>
+                    <span class="text-textMuted">H:<span id="tw-info-high" class="text-success ml-0.5">-</span></span>
+                    <span class="text-textMuted">L:<span id="tw-info-low" class="text-danger ml-0.5">-</span></span>
+                    <span class="text-textMuted">C:<span id="tw-info-close"
+                            class="text-secondary ml-0.5">-</span></span>
+                    <span class="text-textMuted">Vol:<span id="tw-info-volume"
+                            class="text-primary ml-0.5">-</span></span>
+                </div>
+            </div>
+        </div>
+        <!-- Chart Area -->
+        <div class="w-full bg-surface rounded-3xl border border-borderSubtle overflow-hidden">
+            <div id="twstock-chart-container" class="h-[52dvh] w-full relative"></div>
+            <div id="twstock-volume-container" class="w-full h-40 border-t border-borderSubtle"></div>
+        </div>
+    </div>
+
+    <!-- US Stock Chart Modal -->
+    <div id="usstock-chart-section"
+        class="hidden fixed inset-0 z-[60] bg-background/95 backdrop-blur overflow-y-auto p-4 md:p-6">
+        <div class="flex flex-col gap-3 mb-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <h3 id="usstock-chart-title" class="text-lg md:text-xl font-serif text-secondary">US Stock Chart</h3>
+                    <span id="usstock-chart-updated" class="text-[10px] text-textMuted opacity-60"></span>
+                </div>
+                <button data-click="usCloseChart"
+                    class="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-textMuted hover:text-secondary transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <!-- Toolbar -->
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="flex gap-0.5 bg-surface/50 p-1 rounded-xl overflow-x-auto">
+                    <button data-click="usChangeChartInterval" data-click-arg="1d"
+                        class="us-chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap bg-surfaceHighlight text-primary"
+                        data-interval="1d">1D</button>
+                    <button data-click="usChangeChartInterval" data-click-arg="1wk"
+                        class="us-chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1wk">1W</button>
+                    <button data-click="usChangeChartInterval" data-click-arg="1mo"
+                        class="us-chart-interval-btn px-2 py-1 text-[10px] rounded-lg text-textMuted hover:bg-surfaceHighlight transition whitespace-nowrap"
+                        data-interval="1mo">1M</button>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-textMuted ml-4 px-2 py-1 bg-surface/30 rounded-lg">
+                    <i data-lucide="info" class="w-3 h-3"></i> <span data-i18n="chart.afterHoursDelay">After-hours delayed data (yfinance)</span>
+                </div>
+                <div id="us-ohlcv-info" class="flex flex-wrap items-center gap-2 text-[10px] font-mono ml-auto">
+                    <span class="text-textMuted">O:<span id="us-info-open" class="text-secondary ml-0.5">-</span></span>
+                    <span class="text-textMuted">H:<span id="us-info-high" class="text-success ml-0.5">-</span></span>
+                    <span class="text-textMuted">L:<span id="us-info-low" class="text-danger ml-0.5">-</span></span>
+                    <span class="text-textMuted">C:<span id="us-info-close" class="text-secondary ml-0.5">-</span></span>
+                    <span class="text-textMuted">Vol:<span id="us-info-volume" class="text-primary ml-0.5">-</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full bg-surface rounded-3xl border border-borderSubtle overflow-hidden">
+            <div id="usstock-chart-container" class="h-[52dvh] w-full relative"></div>
+            <div id="usstock-volume-container" class="w-full h-40 border-t border-borderSubtle"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Global Filter Modal (Re-styled) -->
+    <div id="global-filter-modal" role="dialog" aria-modal="true" aria-labelledby="global-filter-modal-title"
+        class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
+        <div
+            class="bg-surface w-full max-w-md h-[80dvh] flex flex-col rounded-[2.5rem] border border-borderSubtle shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-borderSubtle flex justify-between items-center">
+                <h3 id="global-filter-modal-title" class="font-serif text-xl text-secondary" data-i18n="modals.filter.title">Asset Filter</h3>
+                <button data-click="closeModal" data-click-arg="global-filter-modal" aria-label="Close"
+                    class="w-8 h-8 rounded-full bg-background flex items-center justify-center text-textMuted hover:text-secondary"><i
+                        data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+
+            <div class="p-4 bg-background/50 space-y-3">
+                <div>
+                    <label for="symbol-search" class="sr-only" data-i18n="modals.searchToken">Search token</label>
+                    <input type="text" id="symbol-search" placeholder="Search (e.g. BTC)..."
+                        data-i18n="modals.filter.searchPlaceholder" data-i18n-attr="placeholder"
+                        class="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-3 text-secondary focus:border-primary/50 outline-none transition"
+                        data-input-action="renderSymbolList">
+                </div>
+                <div class="flex gap-2">
+                    <label for="filter-exchange-select" class="sr-only" data-i18n="modals.selectExchange">Select exchange</label>
+                    <select id="filter-exchange-select" data-change-action="switchFilterExchange"
+                        class="flex-1 bg-background border border-borderSubtle rounded-xl px-3 py-2 text-xs text-textMuted outline-none">
+                        <option value="okx">OKX</option>
+                    </select>
+
+                </div>
+            </div>
+
+            <div id="symbol-list-container" class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar"></div>
+
+            <div class="p-6 border-t border-borderSubtle">
+                <button data-click="applyGlobalFilter"
+                    class="w-full bg-primary text-background font-bold py-4 rounded-2xl transition shadow-lg shadow-primary/20">
+                    <span data-i18n="modals.filter.applyFilter">Apply Filter</span> (<span
+                        id="selected-count-modal">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Modal -->
+    <div id="news-modal"
+        class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-6">
+        <div
+            class="bg-surface w-full max-w-md max-h-[80dvh] flex flex-col rounded-[2.5rem] border border-borderSubtle shadow-2xl">
+            <div class="p-6 border-b border-borderSubtle flex justify-between items-center shrink-0">
+                <h3 class="font-serif text-xl text-secondary flex items-center gap-2">
+                    <span id="news-modal-symbol" class="text-primary">BTC</span> News
+                </h3>
+                <button data-click="closeModal" data-click-arg="news-modal"
+                    class="w-8 h-8 rounded-full bg-background flex items-center justify-center text-textMuted hover:text-secondary transition"><i
+                        data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="news-list-content" class="p-6 overflow-y-auto custom-scrollbar space-y-3">
+                <!-- News items injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- API Test Modal -->
+    <div id="api-test-modal"
+        class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-6 overflow-y-auto">
+        <div class="bg-surface w-full max-w-sm max-h-[80dvh] overflow-y-auto custom-scrollbar p-8 rounded-[2.5rem] border border-success/20 shadow-2xl">
+            <div
+                class="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6 text-success">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-center font-serif text-xl text-secondary mb-2" data-i18n="modals.apiTest.connected">
+                Connected</h3>
+            <p class="text-center text-textMuted text-sm mb-6" data-i18n="modals.apiTest.successMessage">AI brain is now
+                online.</p>
+            <button data-click="closeModal" data-click-arg="api-test-modal"
+                class="w-full py-3 bg-secondary text-background font-bold rounded-2xl"
+                data-i18n="common.continue">Continue</button>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog Modal（message 動態可長——max-h + 卡片內滾） -->
+    <div id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message"
+        class="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-6">
+        <div
+            class="bg-surface w-full max-w-sm max-h-[80dvh] flex flex-col rounded-[2.5rem] border border-borderSubtle shadow-2xl animate-fade-in-up overflow-hidden">
+            <!-- Icon -->
+            <div id="confirm-modal-icon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-8 mb-6 shrink-0">
+                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <!-- Title -->
+            <h3 id="confirm-modal-title" class="text-center font-serif text-xl text-secondary mb-2 px-8 shrink-0"
+                data-i18n="modals.confirm.defaultTitle">Confirm Action</h3>
+            <!-- Message -->
+            <div class="min-h-0 overflow-y-auto custom-scrollbar px-8 pb-6">
+                <p id="confirm-modal-message" class="text-center text-textMuted text-sm whitespace-pre-line"
+                    data-i18n="modals.confirm.defaultMessage">Are you sure you want to proceed?
+                </p>
+            </div>
+            <!-- Buttons -->
+            <div id="confirm-modal-buttons" class="flex gap-3 p-8 pt-2 shrink-0">
+                <button id="confirm-modal-cancel"
+                    class="flex-1 py-3 bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted font-bold rounded-2xl transition border border-borderSubtle"
+                    data-i18n="common.cancel">
+                    Cancel
+                </button>
+                <button id="confirm-modal-confirm"
+                    class="flex-1 py-3 bg-danger hover:brightness-110 text-background font-bold rounded-2xl transition shadow-lg"
+                    data-i18n="common.confirm">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container - top-right on desktop, bottom-center on mobile -->
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="true" class="fixed z-[110] flex flex-col gap-3 pointer-events-none
+        bottom-28 left-4 right-4 items-center
+        md:bottom-auto md:top-24 md:left-auto md:right-4 md:items-end"
+        >
+        <!-- Toasts will be injected here -->
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title"
+        class="fixed inset-0 bg-background/95 backdrop-blur-xl z-[90] overflow-y-auto flex items-center justify-center py-10 px-6 hidden">
+        <!-- Login card -->
+        <div class="relative bg-surface w-full max-w-md p-8 sm:p-10 rounded-[2rem] border border-borderLight shadow-2xl">
+            <!-- Language + Theme switcher: visible before login so users can pick language and theme -->
+            <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+                <div class="login-theme-switcher"></div>
+                <div class="login-lang-switcher"></div>
+            </div>
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="relative w-20 h-20 mx-auto mb-5">
+                    <img src="/static/img/title_icon.png" alt="CryptoMind Logo"
+                         class="relative w-full h-full object-contain">
+                </div>
+                <h2 id="login-modal-title" class="font-serif text-2xl text-secondary mb-2"
+                    data-i18n="login.welcomeTitle">Welcome to CryptoMind</h2>
+                <p class="text-textMuted text-sm" data-i18n="login.welcomeSubtitle">Connect your TON Wallet to get
+                    started</p>
+            </div>
+
+            <!-- TON Connect Login -->
+            <div id="ton-login-area">
+                <!-- Telegram native login (shown by JS only inside a Telegram Mini App).
+                     Logs in via Telegram identity — no wallet needed. -->
+                <button id="tg-login-btn" data-click="safeTelegramLogin"
+                    class="hidden-init group w-full py-4 mb-3 bg-[#229ED9] hover:bg-[#1c8ec4] text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all duration-200 shadow-lg shadow-[#229ED9]/25 hover:scale-[1.02] active:scale-[0.98]">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21.94 4.6 18.6 19.2c-.25 1.1-.92 1.38-1.86.86l-5.14-3.79-2.48 2.39c-.27.27-.5.5-1.03.5l.37-5.27 9.6-8.67c.42-.37-.09-.58-.65-.21L5.5 13.04.66 11.5c-1.05-.33-1.07-1.05.22-1.56L20.62 2.3c.88-.33 1.65.2 1.32 2.3z"/>
+                    </svg>
+                    <span data-i18n="login.connectTelegram">用 Telegram 登入</span>
+                </button>
+                <button id="ton-login-btn" data-click="safeTonLogin"
+                    class="group w-full py-4 bg-primary hover:bg-primary/90 text-background font-bold rounded-2xl flex items-center justify-center gap-3 transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]">
+                    <!-- TON diamond icon -->
+                    <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L21 12L12 22L3 12L12 2Z" stroke-linejoin="round" />
+                    </svg>
+                    <span data-i18n="login.connectTonWallet">Connect TON Wallet</span>
+                </button>
+
+                <!-- Trust indicator: Secured by TON Connect -->
+                <div class="flex items-center justify-center gap-1.5 mt-4 text-textMuted/60">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="M9 12l2 2 4-4" />
+                    </svg>
+                    <span class="text-xs" data-i18n="login.secureLogin">Secured by TON Connect</span>
+                </div>
+                <!-- Tonkeeper hint link -->
+                <div class="text-center mt-3">
+                    <a href="https://tonkeeper.com" target="_blank" rel="noopener noreferrer"
+                        class="text-xs text-primary hover:text-primary/80 transition underline underline-offset-2"
+                        data-i18n="login.noWalletHint">No TON wallet? Get Tonkeeper</a>
+                </div>
+
+                <!-- 訪客模式逃生門（2026-08-20 DANNY）：modal 原本只有連錢包一條路，
+                     訪客被彈窗後出不去（只能重整）。此鈕關閉 modal、回 chat 訪客體驗。 -->
+                <button data-click="continueAsGuest"
+                    class="w-full mt-3 py-3 text-textMuted hover:text-secondary font-medium rounded-2xl border border-borderLight hover:border-borderSubtle transition flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    <span data-i18n="login.continueAsGuest">以訪客身份繼續</span>
+                </button>
+            </div>
+
+            <!-- Test mode login button: only shown in TEST_MODE -->
+            <div id="dev-login-area" class="hidden-init mt-2">
+                <button id="dev-login-btn"
+                    data-click="mockLogin"
+                    class="w-full py-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold rounded-2xl flex items-center justify-center gap-3 transition border border-amber-600/30 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Test Mode Login
+                </button>
+                <p class="text-[10px] text-amber-600/50 text-center mt-2" data-i18n="common.devOnly">Test environment only · Dev only</p>
+            </div>
+
+            <!-- Legal links with border-top separator -->
+            <div class="mt-8 pt-5 border-t border-borderSubtle flex items-center justify-center gap-3 text-[11px] text-textMuted/50">
+                <button data-click="showLegalPage" data-click-arg="terms" class="hover:text-textMuted transition underline underline-offset-2" data-i18n="settings.legal.termsTitle">Terms of Service</button>
+                <span class="opacity-30">·</span>
+                <button data-click="showLegalPage" data-click-arg="privacy" class="hover:text-textMuted transition underline underline-offset-2" data-i18n="settings.legal.privacyTitle">Privacy Policy</button>
+                <span class="opacity-30">·</span>
+                <button data-click="showLegalPage" data-click-arg="guidelines" class="hover:text-textMuted transition underline underline-offset-2" data-i18n="settings.legal.guidelinesTitle">Community Guidelines</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="report-modal"
+        class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-surface w-full max-w-sm max-h-[80dvh] flex flex-col rounded-[2rem] border border-borderSubtle shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-borderSubtle flex justify-between items-center shrink-0">
+                <h3 class="font-serif text-xl text-secondary" data-i18n="safety.gov.reportTitle">Report Content</h3>
+                <button data-click="forumCloseReport"
+                    class="w-8 h-8 rounded-full bg-background flex items-center justify-center text-textMuted hover:text-secondary transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 min-h-0 overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="report-content-type">
+                <input type="hidden" id="report-content-id">
+
+                <div>
+                    <div id="report-error"
+                        class="hidden bg-danger/10 border border-danger/20 text-danger text-sm p-3 rounded-xl mb-3 flex items-start gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                        <span id="report-error-msg"></span>
+                    </div>
+                    <label class="block text-xs font-bold text-textMuted uppercase tracking-wider mb-2"
+                        data-i18n="safety.gov.violationType">Violation Type</label>
+                    <select id="report-type"
+                        class="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-secondary outline-none focus:border-primary/50 transition text-sm">
+                        <option value="" data-i18n="safety.submit.selectType">Select type...</option>
+                        <option value="spam" data-i18n="safety.gov.spam">Spam</option>
+                        <option value="harassment" data-i18n="safety.gov.harassment">Harassment</option>
+                        <option value="misinformation" data-i18n="safety.gov.misinformation">Misinformation</option>
+                        <option value="scam" data-i18n="safety.gov.scam">Scam</option>
+                        <option value="illegal" data-i18n="safety.gov.illegal">Illegal Content</option>
+                        <option value="other" data-i18n="safety.gov.other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-textMuted uppercase tracking-wider mb-2"><span
+                            data-i18n="safety.submit.description">Description</span> <span
+                            class="text-textMuted/50">(Optional)</span></label>
+                    <textarea id="report-description" rows="3" placeholder="Describe the violation..."
+                        data-i18n="safety.gov.describeViolation" data-i18n-attr="placeholder"
+                        class="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-secondary outline-none focus:border-primary/50 transition text-sm resize-none"></textarea>
+                </div>
+                <button data-click="forumSubmitReport" id="btn-submit-report"
+                    class="w-full py-3 bg-danger hover:brightness-110 text-background font-bold rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                    <i data-lucide="flag" class="w-4 h-4"></i> <span data-i18n="safety.gov.submitReport">Submit
+                        Report</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Alert Modal -->
+    <!-- Price Alert Modal -->
+    <div id="alert-modal" class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-6">
+        <div class="bg-surface w-full max-w-sm max-h-[80dvh] flex flex-col rounded-[2.5rem] border border-borderSubtle shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 pt-6 pb-4 border-b border-borderSubtle">
+                <h3 class="font-serif text-lg text-secondary" data-i18n="modals.priceAlert.title">Set Price Alert</h3>
+                <button data-click="closeAlertModal"
+                        class="w-8 h-8 rounded-full bg-background flex items-center justify-center text-textMuted hover:text-secondary transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <!-- Symbol label -->
+            <div class="px-6 pt-4">
+                <p id="alert-symbol-label" class="text-primary text-sm font-mono"></p>
+            </div>
+            <!-- Form -->
+            <div class="px-6 py-4 space-y-4 min-h-0 overflow-y-auto custom-scrollbar flex-1">
+                <div>
+                    <label class="text-textMuted text-xs mb-1.5 block" data-i18n="modals.priceAlert.condition">Condition</label>
+                    <select id="alert-condition"
+                            class="w-full bg-background border border-borderSubtle rounded-2xl px-4 py-3 text-secondary text-sm outline-none focus:border-primary/50 transition">
+                        <option value="above" data-i18n="modals.priceAlert.above">Price above</option>
+                        <option value="below" data-i18n="modals.priceAlert.below">Price below</option>
+                        <option value="change_pct_up" data-i18n="modals.priceAlert.changePctUp">Rise by (%)</option>
+                        <option value="change_pct_down" data-i18n="modals.priceAlert.changePctDown">Drop by (%)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-textMuted text-xs mb-1.5 block" data-i18n="modals.priceAlert.targetLabel">Target value</label>
+                    <input type="number" id="alert-target" step="0.01"
+                           data-i18n-attr="placeholder" data-i18n="modals.priceAlert.targetPlaceholder"
+                           placeholder="Enter target value"
+                           class="w-full bg-background border border-borderSubtle rounded-2xl px-4 py-3 text-secondary text-sm outline-none focus:border-primary/50 transition" />
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="alert-repeat"
+                           class="w-4 h-4 rounded accent-primary" />
+                    <label for="alert-repeat" class="text-textMuted text-sm cursor-pointer"
+                           data-i18n="modals.priceAlert.repeat">Repeat notification (not deleted after trigger)</label>
+                </div>
+            </div>
+            <!-- Footer -->
+            <div class="flex gap-3 px-6 pb-6 shrink-0">
+                <button data-click="submitAlert"
+                        class="flex-1 bg-primary hover:brightness-110 text-background font-semibold py-3 rounded-2xl text-sm transition shadow-lg shadow-primary/20"
+                        data-i18n="modals.priceAlert.confirm">Confirm</button>
+                <button data-click="closeAlertModal"
+                        class="flex-1 bg-background hover:bg-surfaceHighlight text-textMuted hover:text-secondary border border-borderSubtle py-3 rounded-2xl text-sm transition"
+                        data-i18n="modals.priceAlert.cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Settings Modal -->
+    <div id="tool-settings-modal"
+        class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-surface w-full max-w-lg max-h-[85dvh] flex flex-col rounded-[2rem] border border-borderSubtle shadow-2xl">
+            <!-- Header -->
+            <div class="p-6 border-b border-borderSubtle flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-serif text-xl text-secondary" data-i18n="toolSettings.modalTitle">Tool Settings</h3>
+                    <p id="tool-settings-pending-count" class="text-xs text-textMuted mt-0.5"></p>
+                </div>
+                <button data-click="closeToolSettingsModal"
+                    class="w-8 h-8 rounded-full bg-background flex items-center justify-center text-textMuted hover:text-secondary transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <!-- Tool list container -->
+            <div id="tool-settings-modal-list" class="flex-1 overflow-y-auto p-4 space-y-1"></div>
+            <!-- Footer -->
+            <div class="p-4 border-t border-borderSubtle flex gap-3 shrink-0">
+                <button data-click="cancelToolPreferences"
+                    class="flex-1 py-3 bg-background hover:bg-surfaceHighlight text-textMuted border border-borderSubtle rounded-2xl text-sm font-semibold transition"
+                    data-i18n="common.cancel">Cancel</button>
+                <button data-click="saveAllToolPreferences"
+                    id="btn-save-tool-prefs"
+                    class="flex-1 py-3 bg-primary hover:brightness-110 text-background font-bold rounded-2xl text-sm transition shadow-lg shadow-primary/20"
+                    data-i18n="toolSettings.confirmSave">Confirm Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts — ES Modules via Vite -->
+    <div id="feedback-modal" class="fixed inset-0 z-[9998] bg-background hidden flex-col">
+        <nav data-shell-fixed-nav class="sticky top-0 z-10 bg-surface/95 backdrop-blur-xl border-b border-borderSubtle">
+            <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <button data-click="closeFeedbackModal"
+                        class="px-4 py-2 bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted hover:text-secondary rounded-xl transition flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span data-i18n="settings.feedback.back">Back</span>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-serif text-secondary" data-i18n="settings.feedback.modalTitle">Feedback</h1>
+                        <p class="text-xs text-textMuted" data-i18n="settings.feedback.modalSubtitle">Share your platform suggestions and usage experience</p>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="flex-1 overflow-y-auto">
+            <div class="max-w-3xl mx-auto px-6 py-12">
+                <div id="feedback-form-panel" class="bg-surface w-full rounded-[2rem] border border-borderSubtle shadow-2xl p-6 md:p-8">
+                    <div class="flex items-start gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <i data-lucide="message-square-heart" class="w-5 h-5 text-primary"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-serif text-secondary" data-i18n="settings.feedback.formTitle">Tell us what you think</h2>
+                            <p class="text-sm text-textMuted leading-relaxed" data-i18n="settings.feedback.formDescription">
+                                You can leave product suggestions, problems you encountered, or your overall experience using this platform.
+                            </p>
+                        </div>
+                    </div>
+
+                    <label for="feedback-message-input" class="block text-xs font-bold text-textMuted uppercase tracking-wider mb-2" data-i18n="settings.feedback.inputLabel">
+                        Feedback Message
+                    </label>
+                    <textarea
+                        id="feedback-message-input"
+                        rows="8"
+                        maxlength="2000"
+                        data-i18n="settings.feedback.placeholder"
+                        data-i18n-attr="placeholder"
+                        placeholder="Write your feedback here..."
+                        class="w-full bg-background border border-borderSubtle rounded-2xl px-4 py-4 text-secondary outline-none focus:border-primary/50 transition text-sm resize-y"></textarea>
+                    <div class="mt-2 flex items-center justify-between gap-3">
+                        <p id="feedback-error-message" class="text-xs text-danger hidden"></p>
+                        <span id="feedback-char-count" class="ml-auto text-[10px] font-mono text-textMuted">0 / 2000</span>
+                    </div>
+
+                    <div class="mt-6">
+                        <button
+                            id="feedback-submit-btn"
+                            data-click="submitFeedbackMessage"
+                            class="w-full py-3.5 bg-primary hover:brightness-110 text-background font-bold rounded-2xl transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span data-i18n="settings.feedback.submit">Submit Feedback</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="feedback-success-panel" class="hidden bg-surface w-full rounded-[2rem] border border-borderSubtle shadow-2xl p-8 md:p-10 text-center">
+                    <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
+                        <i data-lucide="check-check" class="w-8 h-8 text-success"></i>
+                    </div>
+                    <h2 class="text-2xl font-serif text-secondary" data-i18n="settings.feedback.successTitle">回饋已送出</h2>
+                    <p class="mt-3 text-sm leading-relaxed text-textMuted" data-i18n="settings.feedback.successDescription">感謝您的反饋，我們已經收到你的意見，會作為後續優化參考。</p>
+                    <div class="mt-8">
+                        <button
+                            data-click="closeFeedbackModal"
+                            class="w-full py-3.5 bg-primary hover:brightness-110 text-background font-bold rounded-2xl transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span data-i18n="settings.feedback.successButton">返回設定</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/components/content-modal.js?v=1"></script>
+    <script src="/js/memory-manager.js?v=5"></script>
+    <script src="/js/skill-manager.js?v=5"></script>
+    <script type="module" src="/js/main.js?v=93"></script>
+    <!-- Legal Page Modal -->
+    <div id="legal-modal" class="fixed inset-0 z-[9999] bg-background hidden flex-col">
+        <nav data-shell-fixed-nav class="sticky top-0 z-10 bg-surface/95 backdrop-blur-xl border-b border-borderSubtle">
+            <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button data-click="closeLegalModal"
+                        class="px-4 py-2 bg-surfaceHighlight hover:bg-surfaceHighlight text-textMuted hover:text-secondary rounded-xl transition flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span id="legal-back-text">Back</span>
+                    </button>
+                    <h1 id="legal-title" class="text-xl font-serif text-secondary"></h1>
+                </div>
+            </div>
+        </nav>
+        <div id="legal-content" data-shell-scroll data-shell-scroll-extra="3rem" class="flex-1 overflow-y-auto">
+            <div class="max-w-4xl mx-auto px-6 py-12"></div>
+        </div>
+    </div>
+
+
+    <!-- HITL Question Modal (V4 Web HITL)（question + options 皆 server 動態、無上限——max-h + 內滾） -->
+    <div id="hitl-modal"
+        class="fixed inset-0 bg-background/90 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-6">
+        <div class="bg-surface w-full max-w-lg max-h-[80dvh] flex flex-col rounded-[2.5rem] border border-borderSubtle shadow-2xl overflow-hidden">
+            <div class="flex items-center gap-3 p-8 pb-0 shrink-0">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="help-circle" class="w-5 h-5 text-primary"></i>
+                </div>
+                <h3 class="font-serif text-lg text-secondary" data-i18n="modals.hitl.confirmTitle">Confirmation needed</h3>
+            </div>
+            <div class="p-8 min-h-0 overflow-y-auto custom-scrollbar">
+                <p id="hitl-question-text" class="text-textMuted text-sm mb-6 leading-relaxed whitespace-pre-wrap"></p>
+                <div id="hitl-options-container" class="flex flex-col gap-2 mb-4"></div>
+            </div>
+            <div class="flex gap-2 p-8 pt-0 shrink-0">
+                <input id="hitl-custom-input" type="text" placeholder="Or enter your answer directly..."
+                    class="flex-1 bg-background border border-borderSubtle rounded-2xl px-4 py-3 text-secondary text-sm outline-none focus:border-primary/50 transition"
+                    data-enter="submitHITL">
+                <button data-click="submitHITL"
+                    class="bg-primary hover:bg-primary/80 text-background font-bold px-5 py-3 rounded-2xl transition text-sm"
+                    data-i18n="common.send">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+{
+  "timestamp": 1785919338,
+  "endpoint": "wss://omni-ws.ston.fi",
+  "baseline_quote": {
+    "rfq_id": "774328b0d07fa271c59d37fef2aec1203aa6d1a13540aef61fbbfcbf0fa8b9aa",
+    "quote_id": "c703f11bd8c42e7982c3ec95c24177f75471362e49ceae4491aa582d39f6b5c",
+    "resolver_id": "EQDV8OoP-iqaGDncSOo0dAsPpS0KY_z-d1GraV8fArOy4L1g",
+    "resolver_name": "Omniston",
+    "input_asset": {
+      "ton": {
+        "native": {}
+      }
+    },
+    "output_asset": {
+      "ton": {
+        "jetton": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+      }
+    },
+    "input_units": "1000000000",
+    "output_units": "1386610",
+    "integrator_fee_units": "0",
+    "protocol_fee_units": "0",
+    "quote_timestamp": "1785919340",
+    "estimated_settlement_duration": "1",
+    "gas_budget": "100000000",
+    "estimated_gas_consumption": "20000000",
+    "swap": {
+      "routes": [
+        {
+          "steps": [
+            {
+              "input_asset": {
+                "ton": {
+                  "native": {}
+                }
+              },
+              "output_asset": {
+                "ton": {
+                  "jetton": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+                }
+              },
+              "chunks": [
+                {
+                  "protocol": "DeDust",
+                  "input_units": "1000000000",
+                  "output_units": "1386610"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "min_output_amount": "1372744",
+      "recommended_min_output_amount": "1372744",
+      "recommended_slippage_pips": 10000,
+      "price_impact_pips": 5
+    }
+  },
+  "fee_quote": {
+    "rfq_id": "7ac337f71365ea107f03c3384eb95418cd2a69fc80ba232dbe2dc94662b3e34",
+    "quote_id": "e90d3d0cd1d99994287a5a2541ceeb200da7d66c2abe1b93f0fed90ae8b40edf",
+    "resolver_id": "EQDV8OoP-iqaGDncSOo0dAsPpS0KY_z-d1GraV8fArOy4L1g",
+    "resolver_name": "Omniston",
+    "input_asset": {
+      "ton": {
+        "native": {}
+      }
+    },
+    "output_asset": {
+      "ton": {
+        "jetton": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+      }
+    },
+    "input_units": "1000000000",
+    "output_units": "1382451",
+    "integrator_address": {
+      "ton": "EQDvjDhEZ128EktbSBrK4CWrw1xTTbx4ojlZ-rF2OOS2H_0e"
+    },
+    "integrator_fee_units": "4159",
+    "protocol_fee_units": "0",
+    "quote_timestamp": "1785919342",
+    "estimated_settlement_duration": "1",
+    "gas_budget": "280000000",
+    "estimated_gas_consumption": "55000000",
+    "swap": {
+      "routes": [
+        {
+          "steps": [
+            {
+              "input_asset": {
+                "ton": {
+                  "native": {}
+                }
+              },
+              "output_asset": {
+                "ton": {
+                  "jetton": "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"
+                }
+              },
+              "chunks": [
+                {
+                  "protocol": "DeDust",
+                  "input_units": "1000000000",
+                  "output_units": "1382451"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "min_output_amount": "1368627",
+      "recommended_min_output_amount": "1368627",
+      "recommended_slippage_pips": 10000,
+      "price_impact_pips": 5
+    }
+  }
+}

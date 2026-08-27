@@ -1,0 +1,33 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "@different-ai/opencode-browser"
+  ],
+  "mcp": {
+    "playwright": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "npx",
+        "@playwright/mcp@latest",
+        "--headless"
+      ]
+    },
+    "codegraph": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp"
+      ]
+    },
+    "public-browser": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "public-browser"
+      ]
+    }
+  }
+}

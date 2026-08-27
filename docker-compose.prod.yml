@@ -1,0 +1,140 @@
+# =============================================================
+# CryptoMind / TON — Production Docker Compose（逃生 / 自架方案）
+# -------------------------------------------------------------
+# 用途：脫離 Zeabur 時，在任何 Docker host 上一鍵重現完整服務棧。
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+#
+# 與 docker-compose.yml（本機開發用）的差異：
+#   - image 版本對齊線上（postgres:18、redis-stack-server）
+#   - 每個服務設 deploy.resources.limits（防 OOM 連鎖崩潰）
+#   - 補齊 cron-worker 服務（開發版無）
+#   - logging 限制大小（防 log 撐爆磁碟）
+#   - telegram-bot 預設啟用（非 profile）
+#
+# 資源 limits 依據 2026-08-01 線上實測（阿里雲 4C/8G）：
+#   app        實測 406Mi + LLM/pandas 峰值 → 1536Mi
+#   telegram   實測 378Mi，無 LLM           → 512Mi
+#   cron       實測 78Mi，每日短跑           → 384Mi
+#   postgresql 實測 64Mi，DB 12MB           → 512Mi（預留成長）
+#   redis      實測 17Mi                     → 128Mi
+# 合計 ~2.3 CPU / 3 Gi，留 ~1.7 CPU / 4 Gi 給系統 + 緩衝。
+# =============================================================
+
+# 共用 logging 設定：限制單檔 10MB、保留 3 份，避免磁碟被 log 吃光
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # API 服務（gunicorn + FastAPI）— 唯一跑 alembic migration 的服務
+  # ─────────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env.production
+    environment:
+      # compose 內部服務探索（覆蓋外部 URL，指向同棧容器）
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cryptomind}:${POSTGRES_PASSWORD}@postgresql:5432/${POSTGRES_DB:-cryptomind}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379/0
+      API_BASE_URL: http://app:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────
+  # Telegram Bot — 只透過 HTTP 打 app 服務，不碰 DB/Redis
+  # ─────────────────────────────────────────────────────────────
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    env_file: .env.production
+    environment:
+      API_BASE_URL: http://app:8080
+      TELEGRAM_BOT_MODE: ${TELEGRAM_BOT_MODE:-polling}
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 512M
+    logging: *default-logging
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────
+  # PostgreSQL 18（對齊線上版本）
+  # 備份：docker compose -f docker-compose.prod.yml exec postgresql \
+  #        pg_dump -U $POSTGRES_USER $POSTGRES_DB > backup.sql
+  # 還原：cat backup.sql | docker compose ... exec -T postgresql \
+  #        psql -U $POSTGRES_USER $POSTGRES_DB
+  # ─────────────────────────────────────────────────────────────
+  postgresql:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cryptomind}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-cryptomind}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cryptomind}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────
+  # Redis（對齊線上 redis-stack-server；若不需要 RedisSearch/RedisJSON
+  # 可改用 redis:7-alpine 更輕量）
+  # ─────────────────────────────────────────────────────────────
+  redis:
+    image: redis/redis-stack-server:latest
+    command: >
+      sh -c 'redis-server --requirepass "${REDIS_PASSWORD:-}"'
+    volumes:
+      - redisdata:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 128M
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

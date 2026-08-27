@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Analysis Worker image — 獨立進程，從 Redis queue 取分析任務執行。
+#
+# 徹底脫離 gunicorn worker recycle 威脅：分析跑在這個獨立進程裡，
+# API 進程怎麼 recycle 都不影響正在跑的分析。
+#
+# Zeabur 設定：把 analysis-worker 服務的 Dockerfile 路徑指到此檔
+# （服務 Settings，或設環境變數 ZBPACK_DOCKERFILE_NAME=Dockerfile.analysis-worker）。
+#
+# 環境變數（跟 API 服務共用同一個 Zeabur binding）：
+#   DATABASE_URL=${POSTGRES_URI}
+#   REDIS_URL=${REDIS_URL}
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
+
+WORKDIR /app
+
+# 安裝完整依賴（跟 API 一樣）——穩定性優先於 image 大小
+# worker 引用 api.utils、core.agents 等模組，需要完整依賴
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 複製完整 repo（core/、scripts/、api/ 都需要）
+COPY . .
+
+# Worker 入口：阻塞循環 BRPOP analysis:queue
+CMD ["python", "-m", "scripts.analysis_worker"]

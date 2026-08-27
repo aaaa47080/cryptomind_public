@@ -1,0 +1,3 @@
+# Local working dirs for screenshot processing — don't commit raw/output images
+raw/
+out/

@@ -1,0 +1,23 @@
+{
+  "spike": "M3 BuildSwap",
+  "timestamp": "2026-08-04T16:57:12+0800",
+  "endpoint": "wss://omni-ws.ston.fi",
+  "trade": "1 TON → USDt",
+  "trader_address": "EQDV8OoP-iqaGDncSOo0dAsPpS0KY_z-d1GraV8fArOy4L1g",
+  "quote_id": "82c1db1b8632230b06603ca208c52ce8e041b9b403ae8e0ab8e00acf4515b82a",
+  "build_swap_response": {
+    "messages": [
+      {
+        "target_address": "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_",
+        "send_amount": "1100000000",
+        "payload": "b5ee9c724101030100ab00016bea06185db8e00acf4515b82a43b9aca008007cbff951bbf9e6d86d93fe8de62ac5556a37322908b5ad84d97bcc93ab14ab10314ee8f401014b00000000801abe1d41ff455343073b891d468e8161f4a5a14c7f9fceea356d2be3e056765c0302008d3c37d7e9801abe1d41ff455343073b891d468e8161f4a5a14c7f9fceea356d2be3e056765c100357c3a83fe8aa6860e77123a8d1d02c3e94b4298ff3f9dd46ada57c7c0acecb82bb011af3"
+      }
+    ]
+  },
+  "validation": [
+    "✅ 收到 1 個 message",
+    "  msg[0] ✅ target_address: EQDa4VOnTYlLvDJ0gZjN...",
+    "  msg[0] ✅ send_amount: 1100000000 nanoTON",
+    "  msg[0] ✅ payload: hex 372 chars → base64 248 chars (186 bytes BoC)，可直接餵給 sendTransaction"
+  ]
+}

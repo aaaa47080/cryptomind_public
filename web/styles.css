@@ -1,0 +1,1506 @@
+/* ── Theme tokens (color channels, theme-switchable) ─────────────────────
+   色頻格式（"R G B" 而非 hex/rgb()），讓 Tailwind 的 /<alpha> 透明度修飾詞生效。
+   :root = 預設淺色（top.co 風格）；html.dark 覆寫深色。
+   切換由 ThemeSwitcher + early-init.js 對 <html> toggle .dark class 控制。 */
+:root {
+    color-scheme: light;
+    /* 淺色：亮灰底（非純白，降低長時間觀看的刺眼感）+ 純白卡片（浮出層次）+
+       深化文字（確保 WCAG 對比）。靈感：GitHub/Notion/Apple HIG 淺色模式。 */
+    --color-background: 245 245 247;       /* #F5F5F7 中性亮灰底 */
+    --color-surface: 255 255 255;          /* 純白卡片，在灰底上浮出 */
+    --color-surface-highlight: 238 238 240;/* hover/elevated */
+    --color-text-primary: 23 23 28;        /* 加深主文字，提升對比 */
+    --color-text-secondary: 55 55 60;      /* 次文字加深，確保可讀 */
+    --color-text-muted: 74 76 84;          /* #4A4C54 輔助文字加深至 AAA 對比 */
+    --color-border: 0 0 0;                 /* 色頻（給 Tailwind /<alpha>） */
+    --color-border-subtle: 0 0 0;          /* 色頻（給 Tailwind /<alpha>） */
+    --color-border-light: 0 0 0;
+    /* legacy 完整 rgba（給舊 CSS 直接當 background/border 用，非色頻） */
+    --border-subtle-color: rgba(0, 0, 0, 0.08);
+    --border-light-color: rgba(0, 0, 0, 0.14);
+    --color-surface-elevated: 248 248 250;
+    --color-surface-deep: 235 235 238;
+    /* accent 語意色：兩 theme 共用（不隨深淺變） */
+    --color-primary: 37 99 235;            /* #2563EB 加深藍，確保白字 on 藍底達 AA 對比 */
+    --color-secondary: 20 22 31;
+    --color-accent: 29 78 216;            /* #1D4ED8 淺色需要深藍——原 #7EABF5 在白底只有 2.14:1，text-accent 幾乎看不見 */
+    --color-success: 21 128 61;           /* #15803D 原 #16A34A 只有 3.03:1；白字實心鈕也不合格 */
+    --color-danger: 185 28 28;            /* #B91C1C 原 #DC2626 在 background 上 4.44:1 差一點 */
+    /* legacy 別名（指向色頻 var，供 styles.css 內部 var(--bg-color) 等舊引用） */
+    --bg-color: rgb(var(--color-background));
+    --surface-color: rgb(var(--color-surface));
+    --primary-color: rgb(var(--color-primary));
+    --secondary-color: rgb(var(--color-secondary));
+    --accent-color: rgb(var(--color-accent));
+    --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-nav-bottom-gap: 1rem;
+    --mobile-nav-clearance: calc(5.5rem + var(--mobile-nav-bottom-gap) + var(--mobile-safe-bottom));
+    --mobile-stack-fallback: calc(var(--mobile-nav-clearance) + 5.75rem);
+    --mobile-toast-clearance: calc(var(--mobile-nav-clearance) + 1rem);
+    --chat-keyboard-offset: 0px;
+    --z-sticky: 50;
+    --z-sidebar: 50;
+    --z-modal-backdrop: 60;
+    --z-modal: 70;
+    --z-modal-critical: 80;
+    --z-login: 90;
+    --z-toast: 100;
+    --z-global-nav: 200;
+}
+
+html.dark {
+    color-scheme: dark;
+    /* 深色（既有配色：墨色底 + 研究藍 accent + 暖白字） */
+    --color-background: 20 22 31;
+    --color-surface: 29 32 43;
+    --color-surface-highlight: 41 45 56;
+    --color-text-primary: 255 253 249;
+    --color-text-secondary: 215 216 220;
+    --color-text-muted: 167 169 178;
+    --color-border: 255 253 249;
+    --color-border-subtle: 255 253 249;
+    --color-border-light: 255 253 249;
+    /* legacy 完整 rgba（深色用暖白透明） */
+    --border-subtle-color: rgba(255, 253, 249, 0.08);
+    --border-light-color: rgba(255, 253, 249, 0.14);
+    --color-surface-elevated: 41 45 56;
+    --color-surface-deep: 16 18 26;
+    --color-secondary: 255 253 249;
+    /* 2026-08-25：原本整組沿用 :root，但一組值服務不了兩個主題——
+       深色下 text-primary 3.14:1、text-danger 3.36:1 都讀不到（text-danger
+       用了 276 次、text-success 214 次，全是使用者要讀的損益數字）。
+       這裡按主題各給一組，兩邊都達 AA。accent 深色維持原值（6.98:1 本來就過）。
+       守衛：tests/js/theme_contrast.mjs 直接讀這些值算 WCAG。 */
+    --color-primary: 96 165 250;           /* #60A5FA */
+    --color-accent: 126 171 245;           /* #7EABF5 深色原值 */
+    --color-success: 74 222 128;           /* #4ADE80 */
+    --color-danger: 248 113 113;           /* #F87171 */
+}
+
+body {
+    font-family: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+}
+
+code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    /* tabular-nums: 數字等寬，金融數字上下對齊。見 docs/DESIGN_SYSTEM.md */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+}
+
+/* Display heading utilities — editorial 排版（參考 top.co：
+   大字級 + 收緊 letter-spacing + 600 字重，不靠超粗）。
+   用 utility class（.h1/.h2/.h3）而非套用所有 h1-h6，避免影響 modal/卡片小標。 */
+.h1 {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+.h2 {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+.h3 {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Smooth Transitions - Only for interactive elements (performance fix) */
+button, a, input, select, textarea, .btn, .tab-btn, .nav-btn, .card, .modal, .toast, [role="button"] {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Custom Scrollbar - Minimal */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--border-light-color);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--color-text-primary) / 0.2);
+}
+
+/* Chat Interface */
+/* ── Chat message layout ─────────────────────────────────────── */
+
+/* Shared message row */
+.chat-row {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    max-width: 48rem;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* User row — right side */
+.chat-row-user {
+    justify-content: flex-end;
+}
+
+/* AI row — left side, full width */
+.chat-row-ai {
+    align-items: flex-start;
+}
+
+/* AI avatar circle */
+.chat-avatar {
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+.chat-avatar svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    fill: white;
+}
+
+/* User bubble */
+.chat-bubble-user {
+    max-width: min(72%, 32rem);
+    background: rgb(var(--color-text-primary) / 0.09);
+    border: 1px solid rgb(var(--color-text-primary) / 0.1);
+    border-radius: 1.125rem 1.125rem 0.25rem 1.125rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+}
+
+/* AI content — no bubble, just text */
+.chat-content-ai {
+    flex: 1;
+    min-width: 0;
+    padding-top: 0.05rem;
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--color-text-secondary, var(--color-text-primary));
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+}
+
+/* ── Legacy classes kept for backward compat ─────────────────── */
+.message-bubble { max-width: 72%; padding: 0.625rem 1rem; border-radius: 1.125rem; }
+.user-message {
+    background: rgb(var(--color-text-primary) / 0.09);
+    border: 1px solid rgb(var(--color-text-primary) / 0.1);
+    color: var(--color-text-primary);
+    margin-left: auto;
+    border-bottom-right-radius: 0.25rem;
+}
+.bot-message { background: transparent; padding-left: 0; padding-right: 0; }
+.bot-bubble {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-right: auto;
+    max-width: 100%;
+    min-width: 0;
+}
+.bot-bubble-row { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.25rem 0; max-width: 48rem; margin: 0 auto; }
+.bot-avatar {
+    width: 1.625rem; height: 1.625rem; border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 0.1rem;
+    font-size: 0.6rem; font-weight: 700; color: white; letter-spacing: 0.02em;
+}
+.user-row { display: flex; justify-content: flex-end; max-width: 48rem; margin: 0 auto; padding: 0.25rem 0; }
+
+/* Markdown Styling (Softer) */
+.prose h1, .prose h2, .prose h3 {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+.prose p {
+    margin-bottom: 0.75rem;
+    font-weight: 300;
+}
+.prose strong {
+    color: var(--primary-color); /* Primary - TON blue */
+    font-weight: 600;
+}
+.prose code {
+    background: var(--border-subtle-color);
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: var(--primary-color);
+    font-family: 'JetBrains Mono', monospace;
+}
+.prose pre {
+    background: var(--color-surface-deep);
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border-subtle-color);
+    overflow-x: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.prose ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+.prose ul li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.prose ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Welcome screen stagger animations */
+@keyframes welcomeTitle {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes welcomeSub {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.welcome-title { opacity: 0; animation: welcomeTitle 0.5s  cubic-bezier(0.2, 0.8, 0.2, 1)    0.35s forwards; }
+.welcome-sub   { opacity: 0; animation: welcomeSub   0.45s cubic-bezier(0.2, 0.8, 0.2, 1)    0.52s forwards; }
+
+/* Typing Indicator (Pulse) */
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background: rgb(var(--color-text-primary) / 0.03);
+    border-radius: 20px;
+}
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out both;
+}
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* Table Styling (Clean) */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+th {
+    font-family: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-subtle-color);
+}
+td {
+    padding: 16px;
+    border-bottom: 1px solid rgb(var(--color-text-primary) / 0.02);
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+}
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Range Input for Settings */
+input[type=range] {
+    -webkit-appearance: none; 
+    background: transparent; 
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+}
+input[type=range]:focus {
+    outline: none;
+}
+
+/* Starred Section (Favorites) */
+.starred-section summary {
+    list-style: none;
+}
+
+.starred-section summary::-webkit-details-marker {
+    display: none;
+}
+
+.starred-section .starred-chevron {
+    transition: transform 0.2s ease;
+}
+
+.starred-section[open] .starred-chevron {
+    transform: rotate(90deg);
+}
+
+.starred-list {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Process Container (Analysis Steps) */
+.process-container {
+    background: rgb(var(--color-text-primary) / 0.02);
+    border: 1px solid var(--border-subtle-color);
+    border-radius: 1.25rem; /* Softer corners */
+    overflow: hidden;
+}
+
+.process-container summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-family: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    transition: color 0.2s, background-color 0.2s, opacity 0.2s;
+    list-style: none;
+}
+
+.process-container summary::-webkit-details-marker {
+    display: none;
+}
+
+.process-container summary:hover {
+    color: var(--color-text-primary);
+    background: rgb(var(--color-text-primary) / 0.03);
+}
+
+.process-container summary .chevron {
+    transition: transform 0.2s;
+}
+
+.process-container[open] summary .chevron {
+    transform: rotate(90deg);
+}
+
+.process-content {
+    padding: 1rem;
+    border-top: 1px solid var(--border-subtle-color);
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    background: rgb(var(--color-surface-deep));
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.process-step-item {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+/* Result Container */
+.result-container {
+    margin-top: 1.5rem; /* Distinct separation */
+}
+
+/* Prose: Table inside chat bubble */
+.prose .table-wrapper {
+    overflow-x: auto;
+    margin: 1rem 0;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(var(--color-text-primary) / 0.12);
+    border-left: 3px solid rgba(0, 152, 234, 0.55);
+    background: rgb(var(--color-text-primary) / 0.03);
+}
+.prose table {
+    width: 100%;
+    min-width: 240px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+}
+.prose th {
+    background: rgba(0, 152, 234, 0.1);
+    padding: 10px 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    text-align: left;
+}
+.prose td {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    /* tabular-nums: 表格內數字等寬對齊（見 docs/DESIGN_SYSTEM.md）*/
+    font-variant-numeric: tabular-nums;
+}
+.prose,
+.prose p,
+.prose li,
+.prose blockquote,
+.prose div,
+.prose span {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+}
+.prose pre,
+.prose code {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+/* 第一欄（標籤欄）較暗 */
+.prose td:first-child, .prose th:first-child {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+}
+/* 第二欄（數值欄）醒目 */
+.prose td:last-child {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+/* Zebra stripe 取代每行 border-bottom——分行但不雜亂（見 docs/DESIGN_SYSTEM.md）*/
+.prose tbody tr:nth-child(even) td {
+    background: rgb(var(--color-text-primary) / 0.02);
+}
+.prose tr:hover td {
+    background: rgb(var(--color-text-primary) / 0.05);
+}
+
+/* Prose: Ordered list inside chat bubble */
+.prose ol {
+    list-style: none;
+    padding-left: 0;
+    counter-reset: prose-counter;
+}
+.prose ol li {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 0.5rem;
+    counter-increment: prose-counter;
+}
+.prose ol li::before {
+    content: counter(prose-counter);
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    width: 1.35rem;
+    height: 1.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 152, 234, 0.15);
+    color: var(--primary-color);
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'Inter', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    flex-shrink: 0;
+}
+
+/* Prose: Links */
+.prose a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(0, 152, 234, 0.35);
+}
+.prose a:hover {
+    text-decoration-color: var(--primary-color);
+}
+
+/* Prose: h4 (smaller heading level in analysis results) */
+.prose h4 {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+/* Spinner */
+.spinner {
+    border: 2px solid var(--border-light-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Input/Select Styling */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+}
+
+/* Pulse Animation for Status */
+@keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-pulse-slow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Price Flash Animation (WebSocket Updates) */
+@keyframes priceFlash {
+    0% { background-color: rgba(0, 152, 234, 0.3); }
+    100% { background-color: transparent; }
+}
+
+.price-flash {
+    animation: priceFlash 0.3s ease-out;
+    border-radius: 4px;
+}
+
+/* Prevent initial white flash */
+body {
+    background-color: var(--bg-color);
+    opacity: 0;
+    animation: bodyFadeIn 0.5s ease-out forwards;
+}
+
+@keyframes bodyFadeIn {
+    to { opacity: 1; }
+}
+
+/* Tab Transition Animations
+
+   只淡入、不位移 —— 這是刻意的，不是少寫。
+   .tab-content 是所有分頁內容的容器，底部的固定 chrome（輸入框、提示條）
+   都住在裡面。只要這裡出現 transform 或 will-change: transform，tab 就會
+   成為 position: fixed 子孫的 containing block，那些元素會改成相對 tab 定位
+   而不是相對視窗，整組位移並跟著動畫漂（見 #256）。
+   注意 animation-fill-mode: forwards 結束後留下的 translateY(0) 仍然是
+   transform，參考框不會消失；will-change: transform 更是自己就會建立參考框。
+   opacity 不會有這個問題，所以位移效果整個拿掉。 */
+.tab-content {
+    animation: fadeInOnly 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: opacity;
+}
+
+/* 貼底導覽讓位（僅手機；2026-08-21 修正：固定 7.5rem→動態量測）：
+   桌機浮動 pill 已併入 sidebar；手機貼底 tab bar 讓出空間。
+   --shell-fixed-nav-height 由 ui-shell 量 pill 實際高度（~59px），
+   + 1rem 呼吸空間 ≈ 75px——比原本固定 120px 少 45px，
+   消除「底部一大塊黑色空白」（DANNY 回報跑版問題）。
+   chat 分頁有自己的精細機制。 */
+@media (max-width: 767px) {
+    .tab-content:not(#chat-tab) {
+        padding-bottom: calc(var(--shell-fixed-nav-height, 3.75rem) + 1rem);
+    }
+}
+
+@keyframes fadeInOnly {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Premium Modal Animation */
+.modal-content-active {
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Staggered List Item Animation */
+.list-item-fade {
+    animation: listItemIn 0.4s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes listItemIn {
+    from {
+        opacity: 0;
+        transform: translateX(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Sidebar Smooth Transition */
+#chat-sidebar {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s;
+    will-change: transform;
+}
+/* Hide browser default password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+/* ========================================
+ * Feature Menu - Navigation Customization
+ * ======================================== */
+
+/* Modal Active State */
+#feature-menu-modal:not(.hidden) .feature-menu-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+/* Feature Menu Item */
+.feature-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgb(var(--color-text-primary) / 0.03);
+    border: 1px solid var(--border-subtle-color);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.feature-menu-item:hover {
+    background: var(--border-subtle-color);
+    border-color: var(--border-light-color);
+}
+
+.feature-menu-item.disabled {
+    opacity: 0.5;
+}
+
+.feature-menu-item.disabled .feature-item-icon {
+    opacity: 0.3;
+}
+
+.feature-menu-item.disabled .feature-item-label {
+    color: rgb(var(--color-text-primary) / 0.3);
+}
+
+/* Feature Item Icon */
+.feature-item-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--border-subtle-color);
+    transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.feature-menu-item:hover .feature-item-icon {
+    background: rgba(0, 152, 234, 0.1);
+}
+
+.feature-item-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Feature Item Label
+   2026-08-22：長標籤（ru「Монитор кошелька」等）與系統字體放大下手機會
+   撐破按鈕/兩行歪斜——min-width:0 讓 flex 子項可收縮 + line-clamp 2 行
+   封頂，超過截斷。 */
+.feature-item-label {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    transition: color 0.2s ease;
+}
+
+/* Toggle Switch */
+.feature-toggle {
+    position: relative;
+    width: 3rem;
+    height: 1.75rem;
+    background: var(--border-light-color);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-toggle::after {
+    content: '';
+    position: absolute;
+    top: 0.125rem;
+    left: 0.125rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.feature-toggle.enabled {
+    background: var(--primary-color);
+}
+
+.feature-toggle.enabled::after {
+    transform: translateX(1.25rem);
+}
+
+/* Shake Animation for Invalid Action */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+.feature-menu-item.shake {
+    animation: shake 0.4s ease-in-out;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Warning Banner Animation */
+@keyframes warningPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+#feature-menu-warning:not(.hidden) {
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+/* Nav Item Transition (for when items are added/removed) */
+.nav-btn {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-btn.nav-item-enter {
+    animation: navItemEnter 0.3s ease-out forwards;
+}
+
+.nav-btn.nav-item-exit {
+    animation: navItemExit 0.2s ease-in forwards;
+}
+
+/* Nav scroll fade hint */
+#nav-buttons-wrapper {
+    position: relative;
+    min-width: 0;
+}
+
+#nav-buttons-wrapper::before,
+#nav-buttons-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 18px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+}
+
+#nav-buttons-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, var(--surface-color), transparent);
+}
+
+#nav-buttons-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, var(--surface-color), transparent);
+}
+
+#nav-buttons-wrapper.can-scroll-left::before {
+    opacity: 1;
+}
+
+#nav-buttons-wrapper.can-scroll-right::after {
+    opacity: 1;
+}
+
+@keyframes navItemEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes navItemExit {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* ========================================
+ * Language Switcher Styles (Compact Nav Bar)
+ * ======================================== */
+
+.lang-switcher {
+    position: relative;
+    display: inline-flex;
+}
+
+.lang-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    background: rgb(var(--color-surface-highlight));
+    border: 1px solid var(--border-subtle-color);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+    user-select: none;
+    color: rgb(var(--color-text-muted));
+}
+
+.lang-trigger:hover {
+    background: rgb(var(--color-surface-elevated));
+}
+
+.lang-trigger:focus {
+    outline: 2px solid rgb(var(--color-primary) / 0.5);
+    outline-offset: 2px;
+}
+
+.lang-flag {
+    font-size: 1.125rem;
+    line-height: 1;
+}
+
+/* Dropdown opens UPWARD since nav is at bottom */
+.lang-dropdown {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 10rem;
+    background: var(--surface-color);
+    border: 1px solid rgb(var(--color-border-light));
+    border-radius: 0.75rem;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 -4px 24px rgb(var(--color-text-primary) / 0.12);
+}
+
+.lang-dropdown.hidden {
+    display: none;
+}
+
+.lang-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.lang-option:hover {
+    background: rgb(var(--color-border-subtle));
+}
+
+.lang-option:focus {
+    outline: none;
+    background: rgb(var(--color-border-subtle));
+}
+
+.lang-option.active {
+    background: rgb(var(--color-primary) / 0.1);
+}
+
+.lang-option-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(var(--color-text-muted));
+}
+
+.lang-option.active .lang-option-name {
+    color: var(--primary-color);
+}
+
+/* ========================================
+ * Theme Switcher Styles（結構同 lang-switcher，共用 CSS var 故 dual-theme 相容）
+ * ======================================== */
+
+.theme-switcher {
+    position: relative;
+    display: inline-flex;
+}
+
+.theme-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    background: rgb(var(--color-surface-highlight));
+    border: 1px solid var(--border-subtle-color);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+    user-select: none;
+    color: rgb(var(--color-text-muted));
+}
+
+.theme-trigger:hover {
+    background: rgb(var(--color-surface-elevated));
+}
+
+.theme-trigger:focus {
+    outline: 2px solid rgb(var(--color-primary) / 0.5);
+    outline-offset: 2px;
+}
+
+/* Dropdown opens UPWARD since nav is at bottom */
+.theme-dropdown {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 10rem;
+    background: rgb(var(--color-surface));
+    border: 1px solid rgb(var(--color-border-light));
+    border-radius: 0.75rem;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 0 -4px 24px rgb(var(--color-text-primary) / 0.12);
+}
+
+.theme-dropdown.hidden {
+    display: none;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.theme-option:hover {
+    background: rgb(var(--color-border-subtle));
+}
+
+.theme-option:focus {
+    outline: none;
+    background: rgb(var(--color-border-subtle));
+}
+
+.theme-option.active {
+    background: rgb(var(--color-primary) / 0.1);
+}
+
+.theme-option-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(var(--color-text-muted));
+}
+
+.theme-option.active .theme-option-name {
+    color: rgb(var(--color-primary));
+}
+
+/* ========================================
+ * Header Switcher（手機版頂欄變體）
+ * 手機底欄的 switcher 被 CSS 隱藏（見手機 media query 段），語言/主題
+ * 改掛 mobile header：dropdown 改向下開（頂欄在畫面上緣）、trigger 縮至
+ * 與通知鈴同尺寸（2.25rem = w-9）。
+ * ======================================== */
+.header-lang-switcher .lang-trigger,
+.header-theme-switcher .theme-trigger {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+.header-lang-switcher .lang-dropdown,
+.header-theme-switcher .theme-dropdown {
+    bottom: auto;
+    top: calc(100% + 0.5rem);
+    box-shadow: 0 4px 24px rgb(var(--color-text-primary) / 0.12);
+}
+
+/* Forum pages WITH global nav - add bottom padding to prevent content occlusion */
+body[data-page="index"] main,
+body[data-page="dashboard"] main {
+    padding-bottom: 120px;
+}
+
+/* Deep content pages - no bottom padding needed (nav is hidden) */
+body[data-page="post"] main,
+body[data-page="create"] main,
+body[data-page="profile"] main,
+body[data-page="messages"] main,
+body[data-page="wallet"] main,
+body[data-page="premium"] main {
+    padding-bottom: 0;
+}
+
+/* Ensure proper z-index layering */
+#global-nav-container {
+    z-index: 50;
+    /* 限制不超出 viewport（Tailwind arbitrary class 未編譯，這裡用實體規則確保生效）*/
+    max-width: calc(100vw - 1.5rem);
+}
+
+/* nav 本體寬度也鎖在 viewport 內，超出的按鈕由內部 #nav-buttons 水平滾動，不碰左右邊界 */
+#global-nav-container > nav {
+    max-width: 100%;
+}
+
+/* Forum page navbars should stay below global nav */
+nav.sticky {
+    z-index: 50;
+}
+
+/* Toast/Modal containers should be above global nav */
+#toast-container,
+.modal,
+#confirm-modal,
+#report-modal {
+    z-index: 10000;
+}
+
+@media (max-width: 767px) {
+    /* 整個 shell 的高度必須跟著「當下可見的視窗」走。
+       原本一路是 h-full（height:100%），而 100% 是對 initial containing block 解析的 ——
+       Chrome Android 的 ICB 用的是**大視窗**（網址列收起時的高度），可是網址列正顯示時
+       實際可見的只有小視窗。兩者差一個網址列的高度,於是整個 column 比可見區高一截,
+       底部連同捲動區的下緣一起沉到看不見的地方。
+
+       實機（POCO F8 Ultra / Chrome）量到的就是這個:
+           視窗 clientHeight 718、捲動區 clientHeight 713、頁首 56
+           → 捲動區底邊落在 774,比視窗低 56px
+           → 捲到底時最後一列停在 y=600,而輸入框上緣在 560 → 被蓋住 40px
+       桌機模擬量不到,因為那裡沒有會伸縮的瀏覽器工具列（超出 0px）。
+
+       dvh 就是為這件事設計的:它跟著動態視窗（工具列顯示時的可見高度）。
+       vh 的那行是給不支援 dvh 的舊瀏覽器的 fallback,行為與現況相同。 */
+    #main-content {
+        height: 100vh;
+        height: 100dvh;
+    }
+
+    /* 手機版:貼底滿寬 tab bar(IG/Twitter 模式),取代浮動可拖 pill。
+       浮動 pill 在手機上有兩個先天問題:(1) 拖動手勢與按鈕區橫向捲動競爭,
+       且把手 hidden sm:flex 在 <640px 根本看不到 → 拖不動;(2) 浮在頁面上方
+       永遠擋到下方內容/輸入框。改固定貼底 + 內容預留 padding 即徹底解決。 */
+    #global-nav-container {
+        /* 蓋掉桌面的置中 transform 與 left-1/2/bottom-24,改成滿寬貼底。
+           連 max-width 也要清掉(桌面版主規則限 calc(100vw-1.5rem) 給 pill 用)。 */
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        transform: none !important;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #global-nav-container > nav {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        /* 滿寬底欄 + iPhone safe-area(home gesture bar) */
+        padding-bottom: var(--mobile-safe-bottom);
+        justify-content: center;
+    }
+
+    /* 手機不需要折疊鈕與拖動把手(由 template 加 hidden md:flex 雙重保險) */
+    #global-nav-container #nav-toggle,
+    #global-nav-container .drag-handle {
+        display: none !important;
+    }
+
+    /* 手機底欄只保留主要分頁，避免兩個工具按鈕擠壓主要入口、讓固定的
+       Safety/Guard 落到橫向捲動區外。語言/主題改由 mobile header 的
+       .header-lang-switcher / .header-theme-switcher 提供（見上方變體樣式）。 */
+    #global-nav-container .lang-switcher-container,
+    #global-nav-container .theme-switcher-container {
+        display: none !important;
+    }
+
+    #global-nav-container #nav-buttons-wrapper,
+    #global-nav-container #nav-buttons {
+        width: 100%;
+    }
+
+    #global-nav-container #nav-buttons {
+        justify-content: space-around;
+    }
+
+    #toast-container {
+        bottom: var(--shell-toast-bottom, var(--mobile-toast-clearance)) !important;
+    }
+
+    main .tab-content.overflow-y-auto {
+        padding-bottom: calc(var(--shell-content-clearance, var(--mobile-stack-fallback)) + 1rem) !important;
+    }
+
+    #chat-messages {
+        padding-bottom: calc(var(--shell-content-clearance, var(--mobile-stack-fallback)) + 1rem);
+    }
+
+    /* 貼在輸入框上緣。自身高度由 data-shell-bottom-layer 計入 --shell-content-clearance,
+       所以捲動內容會讓開它,不會再蓋住卡片按鈕。 */
+    #no-llm-key-warning {
+        /* 同上:值是距視窗底部,所以不能留在 absolute(相對 #chat-tab)。 */
+        position: fixed;
+        bottom: calc(var(--shell-fixed-stack-offset, var(--mobile-stack-fallback)) + 0.5rem);
+    }
+
+    #chat-tab > .fixed.bottom-0,
+    [data-shell-fixed-input] {
+        /* 必須是 fixed:本區塊(含 chat-keyboard-open)的 bottom 全部是「距視窗底部」的值。
+           HTML 上是 sticky bottom-0(桌面版隨捲動貼底),而 sticky 的 bottom 是相對
+           捲動容器的黏著門檻,不是視窗偏移 — 沿用 sticky 會讓輸入框落在導覽列上面幾 px,
+           鍵盤打開時的位移也會失效。 */
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        /* 貼齊視窗底部,導覽列的高度用自己的 padding 讓開 — IG / Telegram 的兩段式
+           底部條(輸入列 + tab bar 疊成一整條)。
+           原本是 bottom = 導覽高 + 0.5rem,兩個副作用:
+           (1) 輸入框與導覽之間留下一條 8px 的縫,訊息會從縫裡透出來;
+           (2) 輸入框的位置依賴量出來的導覽高度,量到舊值時整條就落在錯的地方。
+           貼底之後輸入框的 rect 必定含到視窗底部,ui-shell 量到的底部佔位就是
+           「導覽 + 輸入框」的聯集,兩層不會再互相偏移。
+           --shell-fixed-nav-height 是量出來的 rect 高度,已含導覽自身的 safe-area
+           padding(見上方 #global-nav-container > nav),這裡不能再加一次。 */
+        bottom: 0 !important;
+        padding: 0.5rem 0.75rem calc(var(--shell-fixed-nav-height, var(--mobile-nav-clearance)) + 0.5rem);
+    }
+
+    /* 選擇器要比 .shell-fade-bottom(檔案後面、同權重)強,否則漸層會蓋回來。
+       貼底之後漸層的透明段會讓訊息透在輸入列後面,改實心底 + 一條髮絲線。 */
+    [data-shell-fixed-input].shell-fade-bottom {
+        background: var(--bg-color);
+        border-top: 1px solid var(--border-subtle-color);
+    }
+
+    [data-shell-fixed-input] > div {
+        width: 100%;
+        max-width: min(100%, 42rem);
+        min-width: 0;
+    }
+
+    .chat-input-row {
+        align-items: center;
+    }
+
+    .chat-input-shell {
+        min-width: 0;
+        min-height: 3rem;
+        border-radius: 1.4rem;
+    }
+
+    #user-input {
+        width: 100%;
+        min-width: 0;
+        font-size: 16px;
+        line-height: 1.4;
+        padding-left: 0.125rem;
+        padding-right: 0.125rem;
+    }
+
+    #send-btn,
+    .chat-send-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    #settings-tab {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        padding-top: 1rem;
+    }
+
+    #settings-llm-card {
+        border-radius: 1.5rem;
+    }
+
+    #settings-llm-card #test-llm-key-btn,
+    #settings-llm-card #save-llm-key-btn,
+    #settings-tab button[onclick="FeatureMenu.open()"] {
+        min-height: 44px;
+    }
+
+    html.chat-keyboard-open #global-nav-container {
+        opacity: 0;
+        pointer-events: none;
+        /* 手機版 transform 已是 none,直接下滑隱藏即可 */
+        transform: translateY(1.5rem);
+    }
+
+    html.chat-keyboard-open [data-shell-fixed-input] {
+        /* 導覽列此時 opacity:0(不計入量測)→ --shell-fixed-nav-height 為 0,
+           padding-bottom 只剩 0.5rem,所以這裡貼齊鍵盤上緣即可,不再另外加。 */
+        bottom: var(--chat-keyboard-offset) !important;
+    }
+
+    html.chat-keyboard-open #toast-container {
+        bottom: calc(var(--chat-keyboard-offset) + 1rem) !important;
+    }
+}
+
+/* Nav Buttons Scrollbar (WebKit) */
+#nav-buttons::-webkit-scrollbar {
+    height: 3px;
+}
+#nav-buttons::-webkit-scrollbar-track {
+    background: transparent;
+}
+#nav-buttons::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--color-text-primary) / 0.2);
+    border-radius: 9999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--primary-color, #3480F1);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+button, [role="button"] {
+    min-height: 36px;
+    min-width: 36px;
+}
+
+/* ========================================
+ * Skeleton Loading States
+ * ======================================== */
+
+.skeleton {
+    background: linear-gradient(90deg, rgb(var(--color-text-primary) / 0.04) 25%, rgb(var(--color-text-primary) / 0.08) 50%, rgb(var(--color-text-primary) / 0.04) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    border-radius: 0.5rem;
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+    height: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.skeleton-text:last-child {
+    width: 60%;
+}
+
+.skeleton-card {
+    height: 8rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(var(--color-text-primary) / 0.03);
+}
+
+/* ========================================
+ * Smooth Empty State
+ * ======================================== */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.empty-state svg,
+.empty-state [data-lucide] {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.empty-state-title {
+    font-family: 'Inter Tight', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui, sans-serif;
+    font-size: 1.1rem;
+    color: var(--color-text-secondary, #D7D8DC);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-desc {
+    font-size: 0.8125rem;
+    opacity: 0.6;
+    max-width: 24rem;
+}
+
+/* ── Moved from inline styles for CSP compliance ────────────────────────── */
+
+html, body {
+    margin: 0;
+    background: var(--bg-color);
+}
+
+.shell-body { background: var(--bg-color); }
+
+#global-nav-container[data-shell-fixed-nav] {
+    transform: translateX(-50%);
+}
+
+.shell-sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-text-primary) / 0.2) transparent;
+}
+
+.shell-safe-area-x {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.shell-fade-bottom {
+    background: linear-gradient(to bottom, transparent 0%, var(--bg-color) 35%);
+}
+
+.shell-scroll-cap {
+    max-height: 70dvh;
+    overflow-y: auto;
+}
+
+#toast-container {
+    bottom: var(--shell-toast-bottom, calc(7rem + env(safe-area-inset-bottom, 0px)));
+}
+
+.hidden-init { display: none; }
+
+/* ── Dialog / Toast 淡入動畫(ui-shell.js 的 showToast / showConfirmDialog / showInfoDialog 使用)── */
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fade-in 0.2s ease-out both; }
+.animate-fade-in-up { animation: fade-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }

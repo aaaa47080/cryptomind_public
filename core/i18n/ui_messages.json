@@ -1,0 +1,27 @@
+{
+  "zh-TW": {
+    "progress.analyzing_request": "正在分析您的請求...",
+    "progress.querying_tool": "正在查詢：{name}",
+    "progress.tool_done": "{name} 完成",
+    "progress.synthesizing": "正在整理回覆..."
+  },
+  "zh-CN": {
+    "progress.analyzing_request": "正在分析您的请求...",
+    "progress.querying_tool": "正在查询：{name}",
+    "progress.tool_done": "{name} 完成",
+    "progress.synthesizing": "正在整理回复..."
+  },
+  "en": {
+    "progress.analyzing_request": "Analyzing your request...",
+    "progress.querying_tool": "Querying: {name}",
+    "progress.tool_done": "{name} done",
+    "progress.synthesizing": "Synthesizing response..."
+  },
+  "ru": {
+    "_todo_native_review": true,
+    "progress.analyzing_request": "Анализирую ваш запрос...",
+    "progress.querying_tool": "Идёт запрос: {name}",
+    "progress.tool_done": "{name} завершено",
+    "progress.synthesizing": "Формирую ответ..."
+  }
+}

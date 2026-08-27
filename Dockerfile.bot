@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Telegram Bot image — 極簡（aiogram + httpx only）
+#
+# bot 只透過 HTTP 打 API service，不碰 DB/Redis/LLM/前端。
+# 對比 root Dockerfile（537MB，含 Node/Vite/gunicorn/langchain 全家/pandas），
+# 本 image 預期 ~150MB。
+#
+# Zeabur 設定：把 telegram-bot 服務的「Dockerfile 路徑」指到本檔
+# （Settings，或設 ZBPACK_DOCKERFILE_NAME=Dockerfile.bot）。
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.13-slim
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+WORKDIR /app
+
+COPY requirements-bot.txt .
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements-bot.txt
+
+# 只 COPY bot 真正需要的：bot/ 套件（純 HTTP 打 API service，不碰 core/）。
+COPY bot/ bot/
+
+LABEL "language"="python"
+
+# python -m bot.telegram_bot；TELEGRAM_BOT_MODE 控制 polling/webhook
+CMD ["python", "-m", "bot.telegram_bot"]

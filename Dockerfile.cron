@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Cron worker image — 排程任務（trust_score 重算、錢包監測警示）
+#
+# ⚠️ 這是「獨立 cron 服務」專用，跟根目錄的 Dockerfile（web/bot，多階段 + gunicorn）
+#    無關，千萬不要互相覆蓋。
+#
+# Zeabur 設定：把 cron-worker 服務的「Dockerfile 路徑」指到 Dockerfile.cron
+#    （服務 Settings，或設環境變數 ZBPACK_DOCKERFILE_NAME=Dockerfile.cron）。
+#
+# 排程靠容器內的 cron daemon（CMD 跑 `cron -f` 常駐），實際排程見 crontab.txt。
+# daemon 繼續存活、跑完即退出子程序（不會 crash-loop）。
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.13-slim
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends cron \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements.txt
+
+COPY . .
+
+# 安裝排程表
+COPY crontab.txt /etc/cron.d/app-crons
+RUN chmod 0644 /etc/cron.d/app-crons \
+    && crontab /etc/cron.d/app-crons
+
+LABEL "language"="python"
+
+# cron 子程序不繼承容器環境變數，先把 env dump 到 /etc/environment，
+# crontab 裡再 source 回來；cron -f 常駐前景讓容器存活、Runtime Logs 收得到輸出。
+CMD ["sh", "-c", "env > /etc/environment && cron -f"]

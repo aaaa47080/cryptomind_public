@@ -1,0 +1,199 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+# Determine environment from branch
+env:
+  DEPLOY_ENV: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "env_name=production" >> $GITHUB_OUTPUT
+            echo "ton_network=mainnet" >> $GITHUB_OUTPUT
+          else
+            echo "env_name=staging" >> $GITHUB_OUTPUT
+            echo "ton_network=testnet" >> $GITHUB_OUTPUT
+          fi
+          echo "=== Deploying to ${{ steps.env.outputs.env_name }} (${{ steps.env.outputs.ton_network }}) ==="
+
+      - name: Build Docker image
+        run: docker build -t cryptomind:${{ github.sha }} .
+
+      - name: Compile API modules
+        run: docker run --rm cryptomind:${{ github.sha }} python -m compileall -q /app/api
+
+      - name: Verify Vite build output exists
+        run: |
+          docker run --rm cryptomind:${{ github.sha }} python -c "
+          import os
+          assets_dir = '/app/web/assets'
+          assert os.path.isdir(assets_dir), f'assets/ directory not found'
+          bundle_js = [f for f in os.listdir(assets_dir) if f.startswith('index-') and f.endswith('.js')]
+          assert len(bundle_js) == 1, f'Expected 1 bundle JS in assets/, got: {bundle_js}'
+          size = os.path.getsize(os.path.join(assets_dir, bundle_js[0]))
+          assert size > 50000, f'Bundle too small ({size} bytes), Vite build may have failed'
+          print(f'OK: bundle = assets/{bundle_js[0]} ({size} bytes)')
+          "
+
+      # 這份清單必須與 Dockerfile 的 `find ... ! -name` 保留清單一致（只取
+      # 第一層——下面用 os.listdir 比對，子目錄檔案不會出現）。
+      # tests/test_prebundle_scripts.py::test_deploy_allowlist_matches_dockerfile
+      # 會擋住兩邊分岔。
+      - name: Verify raw JS in production is only the pre-bundle scripts
+        run: |
+          docker run --rm cryptomind:${{ github.sha }} python -c "
+          import os
+          js_dir = '/app/web/js'
+          allowed = {
+              'api-client.js', 'apiKeyManager.js', 'auth.js',
+              'classic-compat-app.js', 'classic-compat.js', 'click-delegator.js',
+              'early-init.js', 'error-boundary.js', 'i18n.js',
+              'logger.js', 'memory-manager.js', 'nav-config.js',
+              'offline-banner.js', 'safety-banner.js', 'site-sidebar.js',
+              'skill-manager.js', 'subpage-boot.js', 'ui-shell.js',
+              'utils.js',
+          }
+          if os.path.exists(js_dir):
+              raw_js = {f for f in os.listdir(js_dir) if f.endswith('.js')}
+              extra = raw_js - allowed
+              missing = allowed - raw_js
+              assert not extra, f'Unexpected raw JS files in production: {sorted(extra)}'
+              assert not missing, f'Required pre-bundle scripts missing: {sorted(missing)}'
+              print('OK: web/js/ contains exactly the pre-bundle scripts')
+          else:
+              raise AssertionError('web/js/ missing — early-init/click-delegator would 404')
+          "
+
+      - name: Verify Lucide CDN pinned version
+        run: |
+          docker run --rm cryptomind:${{ github.sha }} python -c "
+          index_path = '/app/web/index.html'
+          with open(index_path) as f:
+              html = f.read()
+          assert 'unpkg.com/lucide@0.577.0' in html, 'ERROR: Pinned Lucide CDN version not found!'
+          print('OK: Lucide CDN pinned at v0.577.0')
+          "
+
+      - name: Smoke test - run container and verify endpoints
+        run: |
+          docker run -d --name smoke -p 8080:8080 \
+            -e DATABASE_URL=postgresql://test:test@localhost:5432/test \
+            -e REDIS_URL=memory:// \
+            -e SECRET_KEY=test-secret \
+            -e JWT_SECRET_KEY=test-jwt-secret-key-for-testing-1234567890 \
+            -e TEST_MODE=true \
+            -e TEST_MODE_CONFIRMATION=I_UNDERSTAND_THE_RISKS \
+            cryptomind:${{ github.sha }}
+
+          cleanup_smoke() {
+            docker rm -f smoke 2>/dev/null || true
+          }
+          trap cleanup_smoke EXIT
+
+          echo "1. Wait for application health endpoint..."
+          HEALTH_STATUS="000"
+          for attempt in $(seq 1 12); do
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health || true)
+            if [ "$HEALTH_STATUS" = "200" ] || [ "$HEALTH_STATUS" = "503" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ "$HEALTH_STATUS" != "200" ] && [ "$HEALTH_STATUS" != "503" ]; then
+            echo "FAIL: application did not start (health $HEALTH_STATUS)"
+            docker logs smoke || true
+            exit 1
+          fi
+          echo "  OK: health endpoint responded ($HEALTH_STATUS)"
+          
+          echo "2. Index page loads..."
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:8080/)
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: index ($STATUS)"
+            docker logs smoke || true
+            exit 1
+          fi
+          
+          echo "3. Vite bundle served..."
+          INDEX_HTML=$(curl -sf http://localhost:8080/)
+          BUNDLE=$(echo "$INDEX_HTML" | grep -o '/static/assets/index-[a-zA-Z0-9_-]*\.js' | head -1)
+          if [ -z "$BUNDLE" ]; then
+            echo "FAIL: no Vite bundle in index.html"
+            echo "HTML snippet:"
+            echo "$INDEX_HTML" | grep -i 'assets\|index-' | head -5
+            docker logs smoke || true
+            exit 1
+          fi
+          BUNDLE_REL=$(echo "$BUNDLE" | sed 's|^/static||')
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "http://localhost:8080/static$BUNDLE_REL")
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: bundle $BUNDLE_REL → $STATUS"
+            docker logs smoke || true
+            exit 1
+          fi
+          echo "  OK: $BUNDLE_REL ($STATUS)"
+          
+          echo "4. CSS loaded..."
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:8080/static/css/tailwind-built.css)
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: CSS ($STATUS)"
+            docker logs smoke || true
+            exit 1
+          fi
+
+          echo "5. Pre-bundle scripts served..."
+          for SCRIPT in /js/early-init.js /js/click-delegator.js /js/memory-manager.js \
+                        /js/skill-manager.js /js/error-boundary.js \
+                        /js/offline-banner.js /js/safety-banner.js \
+                        /js/components/content-modal.js /js/site-sidebar.js /js/nav-config.js; do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "http://localhost:8080$SCRIPT")
+            if [ "$STATUS" != "200" ]; then
+              echo "FAIL: $SCRIPT ($STATUS) — index.html references it as a classic script"
+              docker logs smoke || true
+              exit 1
+            fi
+          done
+
+          echo "=== All smoke tests passed ==="
+        timeout-minutes: 2
+
+      - name: Tag as latest
+        run: |
+          docker tag cryptomind:${{ github.sha }} cryptomind:latest
+          docker tag cryptomind:${{ github.sha }} cryptomind:${{ steps.env.outputs.env_name }}
+
+      - name: Deploy summary
+        run: |
+          echo "## Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ steps.env.outputs.env_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **TON Network**: ${{ steps.env.outputs.ton_network }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+  auto-rollback:
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: failure() && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 5
+          ref: ${{ github.sha }}
+
+      - name: Notify failure
+        run: |
+          echo "::warning::Deployment failed at ${{ github.sha }} on ${{ github.ref_name }}. Manual rollback may be needed."
