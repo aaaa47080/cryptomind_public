@@ -143,3 +143,18 @@ admin-mobile-console.txt
 
 # Mimosa 安全掃描工作區（本地）
 .mimosa/
+
+# 內部工具與生成產物（不屬於公開快照）
+.agent/
+.opencode/
+.test_write
+opencode.json
+setup_claude_tools.sh
+page-snapshot.yml
+security-report-bandit.json
+security-report-deps.json
+PLAN_user_configurable_agents.md
+crontab.txt
+start_db.ps1
+AGENTS.md
+CLAUDE.md

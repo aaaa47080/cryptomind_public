@@ -3,7 +3,22 @@
 # CryptoMind
 ## AI-Powered Crypto Analysis × Community Ecosystem
 
+![License](https://img.shields.io/badge/License-Apache_2.0-blue) ![Built on TON](https://img.shields.io/badge/Built%20on-TON-0098EA) ![Python](https://img.shields.io/badge/Python-3.13-3776AB) ![FastAPI](https://img.shields.io/badge/FastAPI-async-059877)
+
 > **Combining AI-powered analysis with TON blockchain payments to create the ultimate cryptocurrency community platform**
+
+**🔗 Quick Links**
+
+| | |
+|---|---|
+| 🌐 **Web App** | https://cryptomind-ton.zeabur.app |
+| ✈️ **Telegram Mini App** | https://t.me/CryptoMind_TON_BOT/cmind |
+| 🎨 **Landing Page** | https://aaaa47080.github.io/cryptomind-landing |
+
+> ℹ️ **About this repository** — This is a periodically-synced public snapshot of an actively
+> developed codebase. Internal operations material, deployment configuration, and business
+> documents are intentionally excluded (see [NOTICE](NOTICE)). Security reports are welcome
+> via [SECURITY.md](SECURITY.md).
 
 ### 🛡️ Trust Layer for AI Agents
 
@@ -291,10 +306,10 @@ Reference:
 | `JWT_SECRET_KEY` | JWT token signing key | `openssl rand -hex 32` |
 | `API_KEY_ENCRYPTION_SECRET` | Encryption key for user API keys stored in database (**required in production**) | `openssl rand -hex 32` (min 32 characters) |
 
-At least one LLM provider API key is required for AI analysis features:
-- `OPENAI_API_KEY`
-- `OPENROUTER_API_KEY`
-- `GOOGLE_AI_API_KEY`
+At least one LLM provider API key is required for AI analysis features.
+CryptoMind ships with BYOK support for many providers out of the box
+(OpenAI, Google Gemini, OpenRouter, Anthropic, DeepSeek, Groq, Zhipu, and more) —
+see `.env.example` / `.env.production.template` for the complete variable list.
 
 Copy `.env.example` to `.env` and fill in your values before starting the server.
 
@@ -398,4 +413,4 @@ CryptoMind is an independent open-source project. This project is not affiliated
 
 *"Collaborating to build intelligence that acts, not just talks."*
 
-**Last Updated**: 2026-06
+**Last Updated**: 2026-08
